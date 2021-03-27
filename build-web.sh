@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cargo build --release --target wasm32-unknown-unknown
-cp target/wasm32-unknown-unknown/release/electrosim.wasm web
+cp target/wasm32-unknown-unknown/release/flappy-bird.wasm web
 
 if [ "$1" = "serve" ]
 then

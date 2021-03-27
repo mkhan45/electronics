@@ -1,8 +1,9 @@
 [package]
 authors = ["Mikail Khan <mikail.khan45@gmail.com>"]
 edition = "2018"
-name = "electrosim"
+name = "flappy-bird"
 version = "0.1.0"
 
 [dependencies]
 macroquad = { git = "https://github.com/not-fl3/macroquad" }
+specs = { version = "0.16.1", default-features = false, features = ["specs-derive"] }
