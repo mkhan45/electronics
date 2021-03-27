@@ -55,6 +55,14 @@ fn bird_size() -> f32 {
     screen_height() / 30.0
 }
 
+fn jump_vel() -> f32 {
+    screen_height() * 0.9
+}
+
+fn gravity() -> f32 {
+    screen_height() * 1.7
+}
+
 struct DrawSys;
 impl<'a> System<'a> for DrawSys {
     type SystemData = (Read<'a, Bird>, ReadStorage<'a, PipePair>);
@@ -79,7 +87,7 @@ impl<'a> System<'a> for BirdPhysicsSys {
 
     fn run(&mut self, mut bird: Self::SystemData) {
         let dt = macroquad::time::get_frame_time();
-        bird.y_vel += 1800.0 * dt;
+        bird.y_vel += gravity() * dt;
         bird.y_pos += bird.y_vel * dt;
     }
 }
@@ -90,7 +98,7 @@ impl<'a> System<'a> for BirdInputSys {
 
     fn run(&mut self, mut bird: Self::SystemData) {
         if is_key_pressed(KeyCode::Space) {
-            bird.y_vel -= 1000.0;
+            bird.y_vel -= jump_vel();
         }
     }
 }
@@ -115,11 +123,14 @@ impl<'a> System<'a> for BirdCollideSys {
     type SystemData = (Read<'a, Bird>, ReadStorage<'a, PipePair>);
 
     fn run(&mut self, (bird, pipes): Self::SystemData) {
+        use std::process;
+        if bird.y_pos + bird_size() < 0.0 || bird.y_pos - bird_size() > screen_height() {
+            process::exit(0);
+        }
         pipes.join().for_each(|pair| {
             if bird_x_pos() + bird_size() / 2.0 > pair.x
                 && (bird.y_pos - pair.y).abs() > (pipe_gap() - bird_size()) / 2.0
             {
-                use std::process;
                 process::exit(0);
             }
         });
