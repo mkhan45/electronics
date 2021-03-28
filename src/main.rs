@@ -5,33 +5,21 @@ use specs::prelude::*;
 
 pub mod components;
 mod systems;
-use components::nodes;
+use components::nodes::{self, add_node_systems};
 use components::Connected;
-use systems::{ElectroSys, WireSys};
+use systems::WireSys;
 
 // #[macroquad::main("SIMple Electronics")]
 // async fn main() {
 fn main() {
     let mut world = World::new();
 
-    let mut dispatcher = DispatcherBuilder::new()
-        .with(WireSys, "wire_sys", &[])
-        .with(
-            ElectroSys::<nodes::OnNode, 0, 1>::default(),
-            "on_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<nodes::OffNode, 0, 1>::default(),
-            "off_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<nodes::NotNode, 1, 1>::default(),
-            "not_node_sys",
-            &["wire_sys"],
-        )
-        .build();
+    let mut dispatcher = {
+        let mut dispatcher_builder = DispatcherBuilder::new();
+        dispatcher_builder = add_node_systems(dispatcher_builder);
+
+        dispatcher_builder.build()
+    };
     dispatcher.setup(&mut world);
 
     let wire_1 = world.create_entity().with(Wire::default()).build();
@@ -50,8 +38,8 @@ fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::NotNode>,
-            inputs: [Some(wire_1)],
+            node: PhantomData::<nodes::OnNode>,
+            inputs: [],
             outputs: [Some(wire_2)],
         })
         .build();
@@ -59,14 +47,14 @@ fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::NotNode>,
-            inputs: [Some(wire_2)],
+            node: PhantomData::<nodes::AndNode>,
+            inputs: [Some(wire_1), Some(wire_2)],
             outputs: [Some(wire_3)],
         })
         .build();
 
     for _ in 0..3 {
-        dispatcher.dispatch(&mut world);
+        dispatcher.dispatch(&world);
         println!("--------------------------------")
         // next_frame().await;
     }
