@@ -1,7 +1,7 @@
 [package]
 authors = ["Mikail Khan <mikail.khan45@gmail.com>"]
 edition = "2018"
-name = "flappy-bird"
+name = "simple_electronics"
 version = "0.1.0"
 
 [dependencies]
