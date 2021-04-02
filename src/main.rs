@@ -5,7 +5,9 @@ use specs::prelude::*;
 
 mod components;
 mod resources;
+mod svg;
 mod systems;
+
 use components::{
     nodes::{self, add_node_systems},
     Orientation,
@@ -33,6 +35,13 @@ async fn main() {
         builder.build()
     };
 
+    let mq_ctx = unsafe { get_internal_gl() }.quad_context;
+
+    let mut textures = resources::Textures::default();
+    let and_svg = svg::texture_from_file("resources/and_gate.svg", 75, 50, mq_ctx);
+    textures.0.insert("AND_GATE".to_owned(), and_svg);
+    world.insert(textures);
+
     dispatcher.setup(&mut world);
     draw_dispatcher.setup(&mut world);
 
@@ -57,7 +66,15 @@ async fn main() {
         .with(Wire::default())
         .with(Pos {
             orientation: Orientation::Right,
-            pos: Vec2::new(650.0, screen_height() / 2.0),
+            pos: Vec2::new(650.0, screen_height() / 3.0),
+        })
+        .build();
+    let wire_4 = world
+        .create_entity()
+        .with(Wire::default())
+        .with(Pos {
+            orientation: Orientation::Right,
+            pos: Vec2::new(650.0, 2.0 * screen_height() / 3.0),
         })
         .build();
 
@@ -90,13 +107,26 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OrNode>,
+            node: PhantomData::<nodes::XorNode>,
             inputs: [Some(wire_1), Some(wire_2)],
             outputs: [Some(wire_3)],
         })
         .with(Pos {
             orientation: Orientation::Right,
-            pos: Vec2::new(350.0, screen_height() / 2.0),
+            pos: Vec2::new(350.0, screen_height() / 3.0),
+        })
+        .build();
+
+    world
+        .create_entity()
+        .with(Connected {
+            node: PhantomData::<nodes::AndNode>,
+            inputs: [Some(wire_2), Some(wire_1)],
+            outputs: [Some(wire_4)],
+        })
+        .with(Pos {
+            orientation: Orientation::Right,
+            pos: Vec2::new(350.0, 2.0 * screen_height() / 3.0),
         })
         .build();
 
@@ -104,6 +134,7 @@ async fn main() {
     let mut i = 0;
     let tick_frames = 144 / 2;
     loop {
+        clear_background(BLACK);
         if is_key_pressed(KeyCode::Space) {
             ResetSys.run_now(&world);
             i = 0;

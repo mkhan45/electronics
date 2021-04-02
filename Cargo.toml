@@ -7,3 +7,7 @@ version = "0.1.0"
 [dependencies]
 macroquad = { git = "https://github.com/not-fl3/macroquad" }
 specs = { version = "0.16.1", default-features = false, features = ["specs-derive"] }
+
+resvg = "0.14.0"
+usvg = "0.14.0"
+tiny-skia = "0.5.1"
