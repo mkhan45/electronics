@@ -65,3 +65,15 @@ impl<'a> System<'a> for WireSys {
         });
     }
 }
+
+pub struct ResetSys;
+impl<'a> System<'a> for ResetSys {
+    type SystemData = WriteStorage<'a, Wire>;
+
+    fn run(&mut self, mut wires: Self::SystemData) {
+        (&mut wires).join().for_each(|wire| {
+            wire.input_state = false;
+            wire.output_state = false;
+        });
+    }
+}

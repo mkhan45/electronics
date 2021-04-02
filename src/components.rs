@@ -1,4 +1,5 @@
 use core::marker::PhantomData;
+use macroquad::prelude::Vec2;
 use specs::{prelude::*, Component};
 
 pub mod nodes;
@@ -40,4 +41,18 @@ impl Node<1, 1> for Wire {
     fn calculate_state(i: [bool; 1]) -> [bool; 1] {
         i
     }
+}
+
+#[derive(Clone, Copy)]
+pub enum Orientation {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+#[derive(Component, Clone, Copy)]
+pub struct Pos {
+    pub orientation: Orientation,
+    pub pos: Vec2,
 }
