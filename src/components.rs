@@ -35,6 +35,7 @@ where
 pub struct Wire {
     pub input_state: bool,
     pub output_state: bool,
+    pub changed_input: bool,
 }
 
 impl Node<1, 1> for Wire {

@@ -1,30 +1,32 @@
 use crate::components::Wire;
 use core::marker::PhantomData;
-use draw_sys::add_draw_system;
 use macroquad::prelude::*;
 use specs::prelude::*;
 
-pub mod components;
+mod components;
+mod resources;
 mod systems;
 use components::{
     nodes::{self, add_node_systems},
     Orientation,
 };
 use components::{Connected, Pos};
-use systems::WireSys;
-
-mod draw_sys;
+use systems::draw_systems::add_draw_system;
+use systems::simulation_systems::*;
 
 #[macroquad::main("SIMple Electronics")]
 async fn main() {
     // fn main() {
     let mut world = World::new();
 
+    world.insert(resources::TickProgress(0.0));
+
     let mut dispatcher = {
         let mut builder = DispatcherBuilder::new();
         builder = add_node_systems(builder);
         builder.build()
     };
+
     let mut draw_dispatcher = {
         let mut builder = DispatcherBuilder::new();
         builder = add_draw_system(builder);
@@ -75,7 +77,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OnNode>,
+            node: PhantomData::<nodes::OffNode>,
             inputs: [],
             outputs: [Some(wire_2)],
         })
@@ -88,7 +90,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::AndNode>,
+            node: PhantomData::<nodes::OrNode>,
             inputs: [Some(wire_1), Some(wire_2)],
             outputs: [Some(wire_3)],
         })
@@ -100,16 +102,20 @@ async fn main() {
 
     // for _ in 0..3 {
     let mut i = 0;
+    let tick_frames = 144 / 2;
     loop {
-        if i % 72 == 1 {
+        if is_key_pressed(KeyCode::Space) {
+            ResetSys.run_now(&world);
+            i = 0;
+        }
+
+        world.insert(resources::TickProgress(
+            (i % tick_frames) as f64 / tick_frames as f64,
+        ));
+        if i % tick_frames == 0 {
             dispatcher.dispatch(&world);
-            println!("--------------------------------");
         }
         draw_dispatcher.dispatch(&world);
-
-        if is_key_pressed(KeyCode::Space) {
-            crate::systems::ResetSys.run_now(&world);
-        }
 
         world.maintain();
 

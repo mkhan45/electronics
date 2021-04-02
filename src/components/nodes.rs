@@ -1,5 +1,6 @@
 use super::Node;
-use crate::{systems::ElectroSys, WireSys};
+use crate::systems::simulation_systems::ElectroSys;
+use crate::systems::simulation_systems::WireSys;
 use specs::prelude::*;
 
 pub struct Wire;
