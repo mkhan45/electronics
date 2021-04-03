@@ -1,6 +1,7 @@
-use crate::nodes::OnNode;
-use crate::nodes::XorNode;
 use crate::Pos;
+use crate::{components::nodes::NandNode, nodes::NotNode};
+use crate::{components::nodes::NorNode, nodes::OnNode};
+use crate::{components::nodes::XnorNode, nodes::XorNode};
 use crate::{
     components::nodes::{OffNode, OrNode},
     resources::TickProgress,
@@ -212,6 +213,14 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
             input_offsets: [],
         })
         .with_thread_local(DrawNodeSys {
+            node: PhantomData::<NotNode>,
+            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
+                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
+                draw_text("NOT", pos.x - 12.5, pos.y, 25.0, BLACK);
+            }),
+            input_offsets: [Vec2::new(0.0, 0.0)],
+        })
+        .with_thread_local(DrawNodeSys {
             node: PhantomData::<AndNode>,
             draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("AND_GATE").unwrap();
@@ -239,6 +248,22 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
         })
         .with_thread_local(DrawNodeSys {
+            node: PhantomData::<NandNode>,
+            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
+                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
+                draw_text("NAND", pos.x - 12.5, pos.y, 25.0, BLACK);
+            }),
+            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+        })
+        .with_thread_local(DrawNodeSys {
+            node: PhantomData::<NorNode>,
+            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
+                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
+                draw_text("NOR", pos.x - 12.5, pos.y, 25.0, BLACK);
+            }),
+            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+        })
+        .with_thread_local(DrawNodeSys {
             node: PhantomData::<XorNode>,
             draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("XOR_GATE").unwrap();
@@ -254,6 +279,14 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                         ..DrawTextureParams::default()
                     },
                 );
+            }),
+            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+        })
+        .with_thread_local(DrawNodeSys {
+            node: PhantomData::<XnorNode>,
+            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
+                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
+                draw_text("XNOR", pos.x - 12.5, pos.y, 25.0, BLACK);
             }),
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
         })
