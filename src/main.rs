@@ -39,11 +39,11 @@ async fn main() {
 
     let mut textures = resources::Textures::default();
 
-    let and_svg = svg::texture_from_file("resources/and_gate.svg", 75, 50, mq_ctx);
+    let and_svg = svg::texture_from_file("resources/and_gate.svg", 75, 50, mq_ctx).await;
     textures.0.insert("AND_GATE".to_owned(), and_svg);
 
-    let and_svg = svg::texture_from_file("resources/xor_gate.svg", 100, 75, mq_ctx);
-    textures.0.insert("XOR_GATE".to_owned(), and_svg);
+    let xor_svg = svg::texture_from_file("resources/xor_gate.svg", 200, 175, mq_ctx).await;
+    textures.0.insert("XOR_GATE".to_owned(), xor_svg);
 
     world.insert(textures);
 
@@ -149,9 +149,9 @@ async fn main() {
             (i % tick_frames) as f64 / tick_frames as f64,
         ));
         if i % tick_frames == 0 {
-            dispatcher.dispatch(&world);
+            dispatcher.dispatch_seq(&world);
         }
-        draw_dispatcher.dispatch(&world);
+        draw_dispatcher.dispatch_thread_local(&world);
 
         world.maintain();
 

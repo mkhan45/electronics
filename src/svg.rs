@@ -4,13 +4,18 @@ use resvg;
 use std::path::Path;
 use usvg;
 
-pub fn texture_from_file(
-    filename: impl AsRef<Path>,
+pub async fn texture_from_file(
+    filename: &str,
     width: u32,
     height: u32,
     ctx: &mut Context,
 ) -> Texture2D {
-    let svg_tree = usvg::Tree::from_file(filename, &usvg::Options::default()).unwrap();
+    let bytes = macroquad::file::load_file(filename).await.unwrap();
+    texture_from_bytes(bytes.as_slice(), width, height, ctx)
+}
+
+pub fn texture_from_bytes(bytes: &[u8], width: u32, height: u32, ctx: &mut Context) -> Texture2D {
+    let svg_tree = usvg::Tree::from_data(bytes, &usvg::Options::default()).unwrap();
 
     let pixmap = {
         let mut pixmap = tiny_skia::Pixmap::new(width, height).unwrap();

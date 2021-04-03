@@ -235,11 +235,11 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                 let h = 75.0;
                 draw_texture_ex(
                     *texture,
-                    pos.x - w / 2.0,
-                    pos.y - h / 2.0,
+                    pos.x - w / 2.0 + w * 0.1,
+                    pos.y - h / 2.0 + w * 0.1,
                     WHITE,
                     DrawTextureParams {
-                        dest_size: Some(Vec2::new(w, h)),
+                        dest_size: Some(Vec2::new(w * 0.8, h * 0.8)),
                         ..DrawTextureParams::default()
                     },
                 );
