@@ -59,6 +59,17 @@ where
                         let total_dist = horizontal_dist.abs() + vert_dist.abs();
                         let red_dist = diff * total_dist;
 
+                        draw_circle(
+                            sp.x,
+                            sp.y,
+                            5.0,
+                            if wire.input_state && diff >= 0.1 {
+                                RED
+                            } else {
+                                WHITE
+                            },
+                        );
+
                         // vertical
                         {
                             let midpoint = if red_dist < vert_dist.abs() {
@@ -111,6 +122,8 @@ where
                             );
                         }
                     } else {
+                        draw_circle(sp.x, sp.y, 5.0, if wire.input_state { RED } else { WHITE });
+
                         // vertical
                         draw_line(
                             sp.x,
@@ -187,16 +200,14 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OnNode>,
             draw_fn: Arc::new(|Pos { pos, .. }, _| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("ON", pos.x - 12.5, pos.y, 25.0, BLACK);
+                draw_circle(pos.x, pos.y, 25.0, RED);
             }),
             input_offsets: [],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OffNode>,
             draw_fn: Arc::new(|Pos { pos, .. }, _| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("OFF", pos.x - 12.5, pos.y, 25.0, BLACK);
+                draw_circle(pos.x, pos.y, 25.0, WHITE);
             }),
             input_offsets: [],
         })

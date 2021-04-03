@@ -3,6 +3,19 @@ use crate::systems::simulation_systems::ElectroSys;
 use crate::systems::simulation_systems::WireSys;
 use specs::prelude::*;
 
+#[derive(Clone, Copy)]
+pub enum NodeTy {
+    OnNode,
+    OffNode,
+    NotNode,
+    AndNode,
+    OrNode,
+    NandNode,
+    NorNode,
+    XorNode,
+    XnorNode,
+}
+
 pub struct Wire;
 impl Node<1, 1> for Wire {
     fn calculate_state(input: [bool; 1]) -> [bool; 1] {
@@ -10,6 +23,7 @@ impl Node<1, 1> for Wire {
     }
 }
 
+#[derive(Default)]
 pub struct OnNode;
 impl Node<0, 1> for OnNode {
     fn calculate_state(_: [bool; 0]) -> [bool; 1] {
@@ -17,6 +31,7 @@ impl Node<0, 1> for OnNode {
     }
 }
 
+#[derive(Default)]
 pub struct OffNode;
 impl Node<0, 1> for OffNode {
     fn calculate_state(_: [bool; 0]) -> [bool; 1] {
@@ -24,6 +39,7 @@ impl Node<0, 1> for OffNode {
     }
 }
 
+#[derive(Default)]
 pub struct NotNode;
 impl Node<1, 1> for NotNode {
     fn calculate_state(input: [bool; 1]) -> [bool; 1] {
@@ -31,6 +47,7 @@ impl Node<1, 1> for NotNode {
     }
 }
 
+#[derive(Default)]
 pub struct AndNode;
 impl Node<2, 1> for AndNode {
     fn calculate_state(input: [bool; 2]) -> [bool; 1] {
@@ -38,6 +55,7 @@ impl Node<2, 1> for AndNode {
     }
 }
 
+#[derive(Default)]
 pub struct OrNode;
 impl Node<2, 1> for OrNode {
     fn calculate_state(input: [bool; 2]) -> [bool; 1] {
@@ -45,6 +63,7 @@ impl Node<2, 1> for OrNode {
     }
 }
 
+#[derive(Default)]
 pub struct NandNode;
 impl Node<2, 1> for NandNode {
     fn calculate_state(input: [bool; 2]) -> [bool; 1] {
@@ -52,6 +71,7 @@ impl Node<2, 1> for NandNode {
     }
 }
 
+#[derive(Default)]
 pub struct NorNode;
 impl Node<2, 1> for NorNode {
     fn calculate_state(input: [bool; 2]) -> [bool; 1] {
@@ -59,6 +79,7 @@ impl Node<2, 1> for NorNode {
     }
 }
 
+#[derive(Default)]
 pub struct XorNode;
 impl Node<2, 1> for XorNode {
     fn calculate_state(input: [bool; 2]) -> [bool; 1] {
@@ -66,6 +87,7 @@ impl Node<2, 1> for XorNode {
     }
 }
 
+#[derive(Default)]
 pub struct XnorNode;
 impl Node<2, 1> for XnorNode {
     fn calculate_state(input: [bool; 2]) -> [bool; 1] {

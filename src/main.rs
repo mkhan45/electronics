@@ -1,4 +1,5 @@
 use crate::components::Wire;
+use crate::resources::UiSignal;
 use core::marker::PhantomData;
 use egui_macroquad;
 use macroquad::prelude::*;
@@ -8,6 +9,7 @@ mod components;
 mod resources;
 mod svg;
 mod systems;
+mod ui;
 
 use components::{
     nodes::{self, add_node_systems},
@@ -50,6 +52,8 @@ async fn main() {
 
     dispatcher.setup(&mut world);
     draw_dispatcher.setup(&mut world);
+    world.insert(resources::AddingNode(None));
+    world.insert(resources::UiSignals(Vec::new()));
 
     let wire_1 = world
         .create_entity()
@@ -87,7 +91,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OnNode>,
+            node: PhantomData::<nodes::OffNode>,
             inputs: [],
             outputs: [Some(wire_1)],
         })
@@ -100,7 +104,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OffNode>,
+            node: PhantomData::<nodes::OnNode>,
             inputs: [],
             outputs: [Some(wire_2)],
         })
@@ -137,10 +141,12 @@ async fn main() {
         .build();
 
     // for _ in 0..3 {
-    let mut i = 0;
+
+    world.insert(resources::Tick(0));
     let tick_frames = 144;
     loop {
         clear_background(BLACK);
+        let i = world.fetch::<resources::Tick>().0;
 
         world.insert(resources::TickProgress(
             (i % tick_frames) as f64 / tick_frames as f64,
@@ -152,27 +158,25 @@ async fn main() {
 
         world.maintain();
 
+        {
+            let signals_res = world.fetch::<resources::UiSignals>();
+            let ui_signals = signals_res.0.clone();
+            std::mem::drop(signals_res);
+
+            ui_signals.iter().for_each(|signal| match signal {
+                UiSignal::AddNode(ty) => world.insert(resources::AddingNode(Some(*ty))),
+            });
+            world.insert(resources::UiSignals(Vec::new()));
+        }
+
         egui_macroquad::ui(|egui_ctx| {
-            use egui::menu;
-
             egui::TopPanel::top("SIMple Electronics").show(egui_ctx, |ui| {
-                ui.horizontal(|ui| {
-                    menu::menu(ui, "Nodes", |ui| {
-                        if ui.button("On Node").clicked() {
-                            dbg!("pressed");
-                        }
-                    });
-
-                    if ui.button("Reset").clicked() || is_key_pressed(KeyCode::Space) {
-                        ResetSys.run_now(&world);
-                        i = 0;
-                    }
-                });
+                ui::top_panel::render_top_panel(ui, &mut world);
             });
         });
         egui_macroquad::draw();
 
         next_frame().await;
-        i += 1;
+        world.fetch_mut::<resources::Tick>().incr();
     }
 }

@@ -5,7 +5,9 @@ use specs::{prelude::*, Component};
 pub mod nodes;
 
 pub trait Node<const I: usize, const O: usize> {
-    fn calculate_state(inputs: [bool; I]) -> [bool; O];
+    fn calculate_state(inputs: [bool; I]) -> [bool; O]
+    where
+        Self: Sized;
 }
 
 #[derive(Component)]
