@@ -38,8 +38,13 @@ async fn main() {
     let mq_ctx = unsafe { get_internal_gl() }.quad_context;
 
     let mut textures = resources::Textures::default();
+
     let and_svg = svg::texture_from_file("resources/and_gate.svg", 75, 50, mq_ctx);
     textures.0.insert("AND_GATE".to_owned(), and_svg);
+
+    let and_svg = svg::texture_from_file("resources/xor_gate.svg", 100, 75, mq_ctx);
+    textures.0.insert("XOR_GATE".to_owned(), and_svg);
+
     world.insert(textures);
 
     dispatcher.setup(&mut world);
@@ -50,7 +55,7 @@ async fn main() {
         .with(Wire::default())
         .with(Pos {
             orientation: Orientation::Right,
-            pos: Vec2::new(150.0, screen_height() / 2.0 - 50.0),
+            pos: Vec2::new(175.0, screen_height() / 2.0 - 50.0),
         })
         .build();
     let wire_2 = world
@@ -58,7 +63,7 @@ async fn main() {
         .with(Wire::default())
         .with(Pos {
             orientation: Orientation::Right,
-            pos: Vec2::new(150.0, screen_height() / 2.0 + 50.0),
+            pos: Vec2::new(225.0, screen_height() / 2.0 + 50.0),
         })
         .build();
     let wire_3 = world
@@ -132,7 +137,7 @@ async fn main() {
 
     // for _ in 0..3 {
     let mut i = 0;
-    let tick_frames = 144 / 2;
+    let tick_frames = 144;
     loop {
         clear_background(BLACK);
         if is_key_pressed(KeyCode::Space) {
