@@ -21,7 +21,6 @@ use systems::simulation_systems::*;
 
 #[macroquad::main("SIMple Electronics")]
 async fn main() {
-    // fn main() {
     let mut world = World::new();
 
     world.insert(resources::TickProgress(0.0));
@@ -45,8 +44,20 @@ async fn main() {
     let and_svg = svg::texture_from_file("resources/and_gate.svg", 75, 50, mq_ctx).await;
     textures.0.insert("AND_GATE".to_owned(), and_svg);
 
+    let or_svg = svg::texture_from_file("resources/or_gate.svg", 54, 43, mq_ctx).await;
+    textures.0.insert("OR_GATE".to_owned(), or_svg);
+
+    let nand_svg = svg::texture_from_file("resources/nand_gate.svg", 51, 43, mq_ctx).await;
+    textures.0.insert("NAND_GATE".to_owned(), nand_svg);
+
+    let nor_svg = svg::texture_from_file("resources/nor_gate.svg", 55, 40, mq_ctx).await;
+    textures.0.insert("NOR_GATE".to_owned(), nor_svg);
+
     let xor_svg = svg::texture_from_file("resources/xor_gate.svg", 200, 175, mq_ctx).await;
     textures.0.insert("XOR_GATE".to_owned(), xor_svg);
+
+    let xnor_svg = svg::texture_from_file("resources/xnor_gate.svg", 225, 175, mq_ctx).await;
+    textures.0.insert("XNOR_GATE".to_owned(), xnor_svg);
 
     world.insert(textures);
 
@@ -91,7 +102,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OffNode>,
+            node: PhantomData::<nodes::OnNode>,
             inputs: [],
             outputs: [Some(wire_1)],
         })
@@ -117,7 +128,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::XorNode>,
+            node: PhantomData::<nodes::XnorNode>,
             inputs: [Some(wire_1), Some(wire_2)],
             outputs: [Some(wire_3)],
         })
@@ -130,7 +141,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::AndNode>,
+            node: PhantomData::<nodes::NandNode>,
             inputs: [Some(wire_2), Some(wire_1)],
             outputs: [Some(wire_4)],
         })
@@ -140,17 +151,21 @@ async fn main() {
         })
         .build();
 
-    // for _ in 0..3 {
-
     world.insert(resources::Tick(0));
-    let tick_frames = 144;
+
+    let mut last_fps = [60i32; 256];
+
     loop {
         clear_background(BLACK);
         let i = world.fetch::<resources::Tick>().0;
+        last_fps[i % last_fps.len()] = get_fps();
+
+        let tick_frames: usize = (last_fps.iter().sum::<i32>() / last_fps.len() as i32) as usize;
 
         world.insert(resources::TickProgress(
             (i % tick_frames) as f64 / tick_frames as f64,
         ));
+
         if i % tick_frames == 0 {
             dispatcher.dispatch_seq(&world);
         }

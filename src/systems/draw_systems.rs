@@ -241,25 +241,58 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OrNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("OR", pos.x - 12.5, pos.y, 25.0, BLACK);
+            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+                let texture = textures.0.get("OR_GATE").unwrap();
+                let w = 100.0;
+                let h = 75.0;
+                draw_texture_ex(
+                    *texture,
+                    pos.x - w / 2.0 + w * 0.1,
+                    pos.y - h / 2.0 + w * 0.08,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(Vec2::new(w * 0.8, h * 0.8)),
+                        ..DrawTextureParams::default()
+                    },
+                );
             }),
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NandNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("NAND", pos.x - 12.5, pos.y, 25.0, BLACK);
+            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+                let texture = textures.0.get("NAND_GATE").unwrap();
+                let w = 100.0;
+                let h = 75.0;
+                draw_texture_ex(
+                    *texture,
+                    pos.x - w / 2.0 + w * 0.1,
+                    pos.y - h / 2.0 + w * 0.08,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(Vec2::new(w * 0.8, h * 0.8)),
+                        ..DrawTextureParams::default()
+                    },
+                );
             }),
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NorNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("NOR", pos.x - 12.5, pos.y, 25.0, BLACK);
+            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+                let texture = textures.0.get("NOR_GATE").unwrap();
+                let w = 100.0;
+                let h = 75.0;
+                draw_texture_ex(
+                    *texture,
+                    pos.x - w / 2.0 + w * 0.1,
+                    pos.y - h / 2.0 + w * 0.08,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(Vec2::new(w * 0.8, h * 0.8)),
+                        ..DrawTextureParams::default()
+                    },
+                );
             }),
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
         })
@@ -284,9 +317,20 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<XnorNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("XNOR", pos.x - 12.5, pos.y, 25.0, BLACK);
+            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+                let texture = textures.0.get("XNOR_GATE").unwrap();
+                let w = 100.0;
+                let h = 75.0;
+                draw_texture_ex(
+                    *texture,
+                    pos.x - w / 2.0 + w * 0.1,
+                    pos.y - h / 2.0 + w * 0.1,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(Vec2::new(w * 0.8, h * 0.8)),
+                        ..DrawTextureParams::default()
+                    },
+                );
             }),
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
         })
