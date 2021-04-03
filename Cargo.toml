@@ -5,9 +5,15 @@ name = "simple_electronics"
 version = "0.1.0"
 
 [dependencies]
-macroquad = { git = "https://github.com/not-fl3/macroquad" }
+macroquad = "0.3.0-alpha.16"
 specs = { version = "0.16.1", default-features = false, features = ["specs-derive"] }
 
 resvg = { version = "0.14.0", default-features = false }
 usvg = { version = "0.14.0", default-features = false }
 tiny-skia = "0.5.1"
+
+egui-macroquad = "0.1.0"
+egui = "0.10.0"
+
+[profile.release]
+opt-level = 2 # speedy and small

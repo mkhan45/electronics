@@ -1,5 +1,6 @@
 use crate::components::Wire;
 use core::marker::PhantomData;
+use egui_macroquad;
 use macroquad::prelude::*;
 use specs::prelude::*;
 
@@ -140,10 +141,6 @@ async fn main() {
     let tick_frames = 144;
     loop {
         clear_background(BLACK);
-        if is_key_pressed(KeyCode::Space) {
-            ResetSys.run_now(&world);
-            i = 0;
-        }
 
         world.insert(resources::TickProgress(
             (i % tick_frames) as f64 / tick_frames as f64,
@@ -154,6 +151,26 @@ async fn main() {
         draw_dispatcher.dispatch_thread_local(&world);
 
         world.maintain();
+
+        egui_macroquad::ui(|egui_ctx| {
+            use egui::menu;
+
+            egui::TopPanel::top("SIMple Electronics").show(egui_ctx, |ui| {
+                ui.horizontal(|ui| {
+                    menu::menu(ui, "Nodes", |ui| {
+                        if ui.button("On Node").clicked() {
+                            dbg!("pressed");
+                        }
+                    });
+
+                    if ui.button("Reset").clicked() || is_key_pressed(KeyCode::Space) {
+                        ResetSys.run_now(&world);
+                        i = 0;
+                    }
+                });
+            });
+        });
+        egui_macroquad::draw();
 
         next_frame().await;
         i += 1;
