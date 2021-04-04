@@ -1,4 +1,3 @@
-use crate::Pos;
 use crate::{components::nodes::NandNode, nodes::NotNode};
 use crate::{components::nodes::NorNode, nodes::OnNode};
 use crate::{components::nodes::XnorNode, nodes::XorNode};
@@ -11,6 +10,7 @@ use crate::{
     components::{nodes::AndNode, Node},
     resources::Textures,
 };
+use crate::{resources::AddingWire, Pos};
 use core::marker::PhantomData;
 use macroquad::prelude::*;
 use specs::prelude::*;
@@ -217,8 +217,39 @@ where
     }
 }
 
+pub struct TempWireDrawSys;
+impl<'a> System<'a> for TempWireDrawSys {
+    type SystemData = (Read<'a, AddingWire>, ReadStorage<'a, Pos>);
+
+    fn run(&mut self, (adding_wire_state, position_storage): Self::SystemData) {
+        let color = Color::from_rgba(255, 255, 255, 100);
+        match adding_wire_state.0 {
+            Some((e, _, None, Some(_))) => {
+                let start_pos = position_storage.get(e).unwrap().pos;
+
+                draw_line(
+                    start_pos.x,
+                    start_pos.y,
+                    mouse_position().0,
+                    start_pos.y,
+                    5.0,
+                    color,
+                );
+            }
+            Some((_, _, Some(x_pos), Some(y_pos))) => {
+                let (mx, my) = mouse_position();
+
+                draw_line(x_pos, y_pos, x_pos, my, 5.0, color);
+                draw_line(x_pos, my, mx, my, 5.0, color);
+            }
+            _ => return,
+        };
+    }
+}
+
 pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> DispatcherBuilder<'a, 'b> {
     builder
+        .with_thread_local(TempWireDrawSys)
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OnNode>,
             draw_fn: Arc::new(|Pos { pos, .. }, _| {

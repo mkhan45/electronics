@@ -36,7 +36,7 @@ where
             .filter(|(_, pos, _)| (pos.pos - mp).length() < 35.0);
 
         match adding_wire.0 {
-            Some((wire_entity, _, _)) => {
+            Some((_, wire_entity, _, _)) => {
                 for (node, _, _) in filtered {
                     // current node is potential wire output
                     let first_empty = node.inputs.iter().enumerate().find_map(|(i, o)| {
@@ -55,7 +55,7 @@ where
                 }
             }
             None => {
-                for (node, Pos { pos, .. }, _) in filtered {
+                for (node, Pos { pos, .. }, node_entity) in filtered {
                     // current node is potential wire input
                     let first_empty = node.outputs.iter().enumerate().find_map(|(i, o)| {
                         if o.is_none() {
@@ -66,8 +66,14 @@ where
                     });
 
                     if first_empty.is_none() && O == 1 {
-                        *adding_wire =
-                            AddingWire(Some((node.outputs[0].unwrap(), Some(pos.x), Some(pos.y))));
+                        let wire_e = node.outputs[0].unwrap();
+                        let wire_pos = positions.get(wire_e).unwrap();
+                        *adding_wire = AddingWire(Some((
+                            node_entity,
+                            wire_e,
+                            Some(wire_pos.pos.x),
+                            Some(pos.y),
+                        )));
                     } else {
                         if let Some(i) = first_empty {
                             let wire_entity = entities
@@ -75,7 +81,8 @@ where
                                 .with(Wire::default(), &mut wires)
                                 .build();
                             node.outputs[i] = Some(wire_entity);
-                            *adding_wire = AddingWire(Some((wire_entity, None, Some(pos.y))));
+                            *adding_wire =
+                                AddingWire(Some((node_entity, wire_entity, None, Some(pos.y))));
                             break;
                         }
                     }
