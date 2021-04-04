@@ -1,4 +1,4 @@
-use crate::components::{Connected, Node, Orientation, Pos, Wire};
+use crate::components::{Connected, Node, Pos, Wire};
 use crate::resources::AddingWire;
 use core::marker::PhantomData;
 use macroquad::prelude::*;
@@ -18,7 +18,7 @@ where
 {
     type SystemData = (
         WriteStorage<'a, Connected<N, I, O>>,
-        WriteStorage<'a, Pos>,
+        ReadStorage<'a, Pos>,
         WriteStorage<'a, Wire>,
         Write<'a, AddingWire>,
         Entities<'a>,
@@ -26,7 +26,7 @@ where
 
     fn run(
         &mut self,
-        (mut nodes, mut positions, mut wires, mut adding_wire, entities): Self::SystemData,
+        (mut nodes, positions, mut wires, mut adding_wire, entities): Self::SystemData,
     ) {
         let (mx, my) = mouse_position();
         let mp = Vec2::new(mx, my);
@@ -37,7 +37,7 @@ where
 
         match adding_wire.0 {
             Some((wire_entity, _, _)) => {
-                for (node, pos, _) in filtered {
+                for (node, _, _) in filtered {
                     // current node is potential wire output
                     let first_empty = node.inputs.iter().enumerate().find_map(|(i, o)| {
                         if o.is_none() {

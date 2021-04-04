@@ -1,5 +1,4 @@
 use crate::resources;
-use crate::systems::place_node_sys::PlaceNodeSys;
 use crate::ResetSys;
 use crate::{components::nodes, UiSignal};
 use egui::menu;

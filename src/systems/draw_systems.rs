@@ -114,8 +114,8 @@ where
                                 sp.x,
                                 ep.y,
                                 5.0,
-                                // 0.9 is a magic number but it seems to work pretty well
-                                if wire.input_state && delta >= 0.9 {
+                                // 0.1 is a magic number but it seems to work pretty well
+                                if wire.input_state && delta >= 0.5 {
                                     RED
                                 } else {
                                     WHITE

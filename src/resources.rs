@@ -1,4 +1,4 @@
-use macroquad::{prelude::Vec2, texture::Texture2D};
+use macroquad::texture::Texture2D;
 use specs::Entity;
 
 use crate::components::nodes::NodeTy;

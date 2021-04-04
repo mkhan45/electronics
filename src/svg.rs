@@ -1,7 +1,6 @@
 use macroquad::miniquad::graphics::Context;
 use macroquad::texture::Texture2D;
 use resvg;
-use std::path::Path;
 use usvg;
 
 pub async fn texture_from_file(
@@ -20,7 +19,7 @@ pub fn texture_from_bytes(bytes: &[u8], width: u32, height: u32, ctx: &mut Conte
     let pixmap = {
         let mut pixmap = tiny_skia::Pixmap::new(width, height).unwrap();
         resvg::render(&svg_tree, usvg::FitTo::Original, pixmap.as_mut());
-        pixmap.to_owned()
+        pixmap
     };
 
     Texture2D::from_rgba8(ctx, width as u16, height as u16, pixmap.data())
