@@ -31,9 +31,13 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
             node_button!("Xnor Node", XnorNode);
         });
 
-        if ui.button("Reset").clicked() || is_key_pressed(KeyCode::Space) {
+        if ui.button("Restart Sim").clicked() || is_key_pressed(KeyCode::Space) {
             ResetSys.run_now(&world);
             world.insert(resources::Tick(0));
+        }
+
+        if ui.button("Remove All").clicked() {
+            world.delete_all();
         }
     });
 }

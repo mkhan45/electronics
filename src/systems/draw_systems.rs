@@ -52,12 +52,12 @@ where
                     let ep = Vec2::new(pos.x, pos.y) + self.input_offsets[i];
 
                     if wire.output_state != wire.input_state {
-                        let diff = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
+                        let delta = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
 
                         let horizontal_dist = ep.x - sp.x;
                         let vert_dist = ep.y - sp.y;
                         let total_dist = horizontal_dist.abs() + vert_dist.abs();
-                        let red_dist = diff * total_dist;
+                        let red_dist = delta * total_dist;
 
                         // vertical
                         {
@@ -109,6 +109,18 @@ where
                                 5.0,
                                 if wire.input_state { WHITE } else { RED },
                             );
+
+                            draw_circle(
+                                sp.x,
+                                ep.y,
+                                5.0,
+                                // 0.9 is a magic number but it seems to work pretty well
+                                if wire.input_state && delta >= 0.9 {
+                                    RED
+                                } else {
+                                    WHITE
+                                },
+                            );
                         }
                     } else {
                         // vertical
@@ -130,6 +142,8 @@ where
                             5.0,
                             if wire.input_state { RED } else { WHITE },
                         );
+
+                        draw_circle(sp.x, ep.y, 5.0, if wire.input_state { RED } else { WHITE });
                     }
                 });
 
@@ -221,11 +235,22 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NotNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
-                draw_rectangle(pos.x - 25.0, pos.y - 25.0, 50.0, 50.0, WHITE);
-                draw_text("NOT", pos.x - 12.5, pos.y, 25.0, BLACK);
+            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+                let texture = textures.0.get("NOT_GATE").unwrap();
+                let w = 50.0;
+                let h = 50.0;
+                draw_texture_ex(
+                    *texture,
+                    pos.x - w / 2.0,
+                    pos.y - h / 2.0,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(Vec2::new(w, h)),
+                        ..DrawTextureParams::default()
+                    },
+                );
             }),
-            input_offsets: [Vec2::new(0.0, 0.0)],
+            input_offsets: [Vec2::new(-25.0, 0.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<AndNode>,

@@ -41,6 +41,9 @@ async fn main() {
 
     let mut textures = resources::Textures::default();
 
+    let not_svg = svg::texture_from_file("resources/not_gate.svg", 50, 45, mq_ctx).await;
+    textures.0.insert("NOT_GATE".to_owned(), not_svg);
+
     let and_svg = svg::texture_from_file("resources/and_gate.svg", 75, 50, mq_ctx).await;
     textures.0.insert("AND_GATE".to_owned(), and_svg);
 
