@@ -23,7 +23,7 @@ pub enum UiSignal {
 #[derive(Default)]
 pub struct UiSignals(pub Vec<UiSignal>);
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct Tick(pub usize);
 
 impl Tick {

@@ -1,6 +1,6 @@
-use crate::components::Node;
 use crate::components::Wire;
 use crate::Connected;
+use crate::{components::Node, resources::Tick};
 use core::marker::PhantomData;
 use specs::prelude::*;
 
@@ -72,12 +72,13 @@ impl<'a> System<'a> for WireSys {
 
 pub struct ResetSys;
 impl<'a> System<'a> for ResetSys {
-    type SystemData = WriteStorage<'a, Wire>;
+    type SystemData = (WriteStorage<'a, Wire>, Write<'a, Tick>);
 
-    fn run(&mut self, mut wires: Self::SystemData) {
+    fn run(&mut self, (mut wires, mut tick): Self::SystemData) {
         (&mut wires).join().for_each(|wire| {
             wire.input_state = false;
             wire.output_state = false;
         });
+        tick.0 = 0;
     }
 }
