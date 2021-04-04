@@ -167,7 +167,7 @@ async fn main() {
             (i % tick_frames) as f64 / tick_frames as f64,
         ));
 
-        if i % tick_frames == 0 {
+        if i > last_fps.len() && i % tick_frames == 0 {
             dispatcher.dispatch_seq(&world);
         }
         draw_dispatcher.dispatch_thread_local(&world);

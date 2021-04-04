@@ -52,24 +52,12 @@ where
                     let ep = Vec2::new(pos.x, pos.y) + self.input_offsets[i];
 
                     if wire.output_state != wire.input_state {
-                        // if false {
                         let diff = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
 
                         let horizontal_dist = ep.x - sp.x;
                         let vert_dist = ep.y - sp.y;
                         let total_dist = horizontal_dist.abs() + vert_dist.abs();
                         let red_dist = diff * total_dist;
-
-                        draw_circle(
-                            sp.x,
-                            sp.y,
-                            5.0,
-                            if wire.input_state && diff >= 0.1 {
-                                RED
-                            } else {
-                                WHITE
-                            },
-                        );
 
                         // vertical
                         {
@@ -123,8 +111,6 @@ where
                             );
                         }
                     } else {
-                        draw_circle(sp.x, sp.y, 5.0, if wire.input_state { RED } else { WHITE });
-
                         // vertical
                         draw_line(
                             sp.x,
@@ -155,10 +141,11 @@ where
                         let wire = wires.get(*e).unwrap();
 
                         let sp = Vec2::new(pos.x, pos.y);
-                        let ep = *wire_pos;
+                        let ep = Vec2::new(wire_pos.x, pos.y);
 
                         if wire.changed_input {
-                            let diff = (ep - sp) * (tick_progress.0 * 2.0).clamp(0.0, 1.0) as f32;
+                            let delta = (tick_progress.0 * 2.0).clamp(0.0, 1.0) as f32;
+                            let diff = (ep - sp) * delta;
                             let mid = sp + diff;
 
                             draw_line(
@@ -180,10 +167,29 @@ where
                                     if wire.input_state { WHITE } else { RED },
                                 );
                             }
+
+                            draw_circle(
+                                ep.x,
+                                sp.y,
+                                5.0,
+                                // 0.9 is a magic number but it seems to work pretty well
+                                if wire.input_state && delta >= 0.9 {
+                                    RED
+                                } else {
+                                    WHITE
+                                },
+                            );
                         } else {
                             draw_line(
                                 sp.x,
                                 sp.y,
+                                ep.x,
+                                sp.y,
+                                5.0,
+                                if wire.input_state { RED } else { WHITE },
+                            );
+
+                            draw_circle(
                                 ep.x,
                                 sp.y,
                                 5.0,

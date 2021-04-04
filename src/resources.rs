@@ -13,7 +13,7 @@ pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 pub struct AddingNode(pub Option<NodeTy>);
 
 #[derive(Default)]
-pub struct AddingWire(pub Option<(Entity, Option<Vec2>)>);
+pub struct AddingWire(pub Option<(Entity, Option<f32>, Option<f32>)>);
 
 #[derive(Clone)]
 pub enum UiSignal {

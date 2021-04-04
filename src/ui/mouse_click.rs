@@ -46,15 +46,15 @@ pub fn handle_mouse_click(world: &mut World) {
 pub fn handle_mouse_right_click(world: &mut World) {
     let adding_wire = world.fetch::<AddingWire>().0;
     match adding_wire {
-        Some((wire_entity, None)) => {
-            let (mx, my) = mouse_position();
-            world.insert(AddingWire(Some((wire_entity, Some(Vec2::new(mx, my))))));
+        Some((wire_entity, None, Some(y_pos))) => {
+            let (mx, _) = mouse_position();
+            world.insert(AddingWire(Some((wire_entity, Some(mx), Some(y_pos)))));
             world
                 .write_storage::<Pos>()
                 .insert(
                     wire_entity,
                     Pos {
-                        pos: Vec2::new(mx, my),
+                        pos: Vec2::new(mx, y_pos),
                         orientation: Orientation::Right,
                     },
                 )
