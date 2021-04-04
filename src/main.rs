@@ -67,90 +67,90 @@ async fn main() {
     world.insert(resources::AddingWire(None));
     world.insert(resources::UiSignals(Vec::new()));
 
-    let wire_1 = world
-        .create_entity()
-        .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(175.0, screen_height() / 2.0 - 30.0),
-        })
-        .build();
-    let wire_2 = world
-        .create_entity()
-        .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(225.0, screen_height() / 2.0 + 80.0),
-        })
-        .build();
-    let wire_3 = world
-        .create_entity()
-        .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(650.0, screen_height() / 3.0),
-        })
-        .build();
-    let wire_4 = world
-        .create_entity()
-        .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(650.0, 2.0 * screen_height() / 3.0),
-        })
-        .build();
+    // let wire_1 = world
+    //     .create_entity()
+    //     .with(Wire::default())
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(175.0, screen_height() / 2.0 - 30.0),
+    //     })
+    //     .build();
+    // let wire_2 = world
+    //     .create_entity()
+    //     .with(Wire::default())
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(225.0, screen_height() / 2.0 + 80.0),
+    //     })
+    //     .build();
+    // let wire_3 = world
+    //     .create_entity()
+    //     .with(Wire::default())
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(650.0, screen_height() / 3.0),
+    //     })
+    //     .build();
+    // let wire_4 = world
+    //     .create_entity()
+    //     .with(Wire::default())
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(650.0, 2.0 * screen_height() / 3.0),
+    //     })
+    //     .build();
 
-    world
-        .create_entity()
-        .with(Connected {
-            node: PhantomData::<nodes::OnNode>,
-            inputs: [],
-            outputs: [Some(wire_1)],
-        })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(50.0, screen_height() / 2.0 - 50.0),
-        })
-        .build();
+    // world
+    //     .create_entity()
+    //     .with(Connected {
+    //         node: PhantomData::<nodes::OnNode>,
+    //         inputs: [],
+    //         outputs: [Some(wire_1)],
+    //     })
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(50.0, screen_height() / 2.0 - 50.0),
+    //     })
+    //     .build();
 
-    world
-        .create_entity()
-        .with(Connected {
-            node: PhantomData::<nodes::OnNode>,
-            inputs: [],
-            outputs: [Some(wire_2)],
-        })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(50.0, screen_height() / 2.0 + 50.0),
-        })
-        .build();
+    // world
+    //     .create_entity()
+    //     .with(Connected {
+    //         node: PhantomData::<nodes::OnNode>,
+    //         inputs: [],
+    //         outputs: [Some(wire_2)],
+    //     })
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(50.0, screen_height() / 2.0 + 50.0),
+    //     })
+    //     .build();
 
-    world
-        .create_entity()
-        .with(Connected {
-            node: PhantomData::<nodes::XnorNode>,
-            inputs: [Some(wire_1), Some(wire_2)],
-            outputs: [Some(wire_3)],
-        })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(350.0, screen_height() / 3.0),
-        })
-        .build();
+    // world
+    //     .create_entity()
+    //     .with(Connected {
+    //         node: PhantomData::<nodes::XnorNode>,
+    //         inputs: [Some(wire_1), Some(wire_2)],
+    //         outputs: [Some(wire_3)],
+    //     })
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(350.0, screen_height() / 3.0),
+    //     })
+    //     .build();
 
-    world
-        .create_entity()
-        .with(Connected {
-            node: PhantomData::<nodes::NandNode>,
-            inputs: [Some(wire_2), Some(wire_1)],
-            outputs: [Some(wire_4)],
-        })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(350.0, 2.0 * screen_height() / 3.0),
-        })
-        .build();
+    // world
+    //     .create_entity()
+    //     .with(Connected {
+    //         node: PhantomData::<nodes::NandNode>,
+    //         inputs: [Some(wire_2), Some(wire_1)],
+    //         outputs: [Some(wire_4)],
+    //     })
+    //     .with(Pos {
+    //         orientation: Orientation::Right,
+    //         pos: Vec2::new(350.0, 2.0 * screen_height() / 3.0),
+    //     })
+    //     .build();
 
     world.insert(resources::Tick(0));
 
@@ -161,17 +161,20 @@ async fn main() {
         let i = world.fetch::<resources::Tick>().0;
         last_fps[i % last_fps.len()] = get_fps();
 
-        let tick_frames: usize = (last_fps.iter().sum::<i32>() / last_fps.len() as i32) as usize;
+        // let tick_frames: usize = (last_fps.iter().sum::<i32>() / last_fps.len() as i32) as usize;
+        let tick_frames = 144;
 
         world.insert(resources::TickProgress(
             (i % tick_frames) as f64 / tick_frames as f64,
         ));
 
-        if i > last_fps.len() && i % tick_frames == 0 {
+        // if i > last_fps.len() && i % tick_frames == 0 {
+        if i % tick_frames == 0 {
             dispatcher.dispatch_seq(&world);
         }
         draw_dispatcher.dispatch_thread_local(&world);
 
+        world.fetch_mut::<resources::Tick>().incr();
         world.maintain();
 
         {
@@ -204,6 +207,5 @@ async fn main() {
         // dbg!(world.fetch::<resources::AddingWire>().0);
 
         next_frame().await;
-        world.fetch_mut::<resources::Tick>().incr();
     }
 }

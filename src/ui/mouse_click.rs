@@ -11,6 +11,7 @@ use crate::nodes;
 use crate::resources;
 
 pub fn handle_mouse_click(world: &mut World) {
+    world.insert(resources::AddingWire(None));
     let node = world.fetch::<resources::AddingNode>();
 
     if let resources::AddingNode(Some(n)) = &*node {
