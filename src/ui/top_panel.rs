@@ -35,38 +35,5 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
             ResetSys.run_now(&world);
             world.insert(resources::Tick(0));
         }
-
-        if is_mouse_button_pressed(MouseButton::Left) {
-            let node = world.fetch::<resources::AddingNode>();
-
-            if let resources::AddingNode(Some(n)) = &*node {
-                macro_rules! place_node_systems {
-                    ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
-                        #[allow(unreachable_patterns)]
-                        match n {
-                            $(nodes::NodeTy::$node => {
-                                PlaceNodeSys::<nodes::$node, $i, $o>::default().run_now(&world)
-                            })*
-                            _ => todo!(),
-                        }
-                    };
-                }
-
-                place_node_systems!(
-                    [OnNode, 0, 1],
-                    [OffNode, 0, 1],
-                    [NotNode, 1, 1],
-                    [AndNode, 2, 1],
-                    [OrNode, 2, 1],
-                    [NandNode, 2, 1],
-                    [NorNode, 2, 1],
-                    [XorNode, 2, 1],
-                    [XnorNode, 2, 1]
-                );
-
-                std::mem::drop(node);
-                world.insert(resources::AddingNode(None));
-            }
-        }
     });
 }

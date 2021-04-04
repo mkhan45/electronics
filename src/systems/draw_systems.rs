@@ -151,44 +151,45 @@ where
                 .iter()
                 .filter_map(|o| o.as_ref())
                 .for_each(|e| {
-                    let Pos { pos: wire_pos, .. } = positions.get(*e).unwrap();
-                    let wire = wires.get(*e).unwrap();
+                    if let Some(Pos { pos: wire_pos, .. }) = positions.get(*e) {
+                        let wire = wires.get(*e).unwrap();
 
-                    let sp = Vec2::new(pos.x, pos.y);
-                    let ep = *wire_pos;
+                        let sp = Vec2::new(pos.x, pos.y);
+                        let ep = *wire_pos;
 
-                    if wire.changed_input {
-                        let diff = (ep - sp) * (tick_progress.0 * 2.0).clamp(0.0, 1.0) as f32;
-                        let mid = sp + diff;
+                        if wire.changed_input {
+                            let diff = (ep - sp) * (tick_progress.0 * 2.0).clamp(0.0, 1.0) as f32;
+                            let mid = sp + diff;
 
-                        draw_line(
-                            sp.x,
-                            sp.y,
-                            mid.x,
-                            mid.y,
-                            5.0,
-                            if wire.input_state { RED } else { WHITE },
-                        );
-
-                        if mid != ep {
                             draw_line(
+                                sp.x,
+                                sp.y,
                                 mid.x,
                                 mid.y,
-                                ep.x,
-                                ep.y,
                                 5.0,
-                                if wire.input_state { WHITE } else { RED },
+                                if wire.input_state { RED } else { WHITE },
+                            );
+
+                            if mid != ep {
+                                draw_line(
+                                    mid.x,
+                                    mid.y,
+                                    ep.x,
+                                    ep.y,
+                                    5.0,
+                                    if wire.input_state { WHITE } else { RED },
+                                );
+                            }
+                        } else {
+                            draw_line(
+                                sp.x,
+                                sp.y,
+                                ep.x,
+                                sp.y,
+                                5.0,
+                                if wire.input_state { RED } else { WHITE },
                             );
                         }
-                    } else {
-                        draw_line(
-                            sp.x,
-                            sp.y,
-                            ep.x,
-                            sp.y,
-                            5.0,
-                            if wire.input_state { RED } else { WHITE },
-                        );
                     }
                 });
             (self.draw_fn)(*self_pos, &textures);

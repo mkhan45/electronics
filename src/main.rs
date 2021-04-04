@@ -64,6 +64,7 @@ async fn main() {
     dispatcher.setup(&mut world);
     draw_dispatcher.setup(&mut world);
     world.insert(resources::AddingNode(None));
+    world.insert(resources::AddingWire(None));
     world.insert(resources::UiSignals(Vec::new()));
 
     let wire_1 = world
@@ -71,7 +72,7 @@ async fn main() {
         .with(Wire::default())
         .with(Pos {
             orientation: Orientation::Right,
-            pos: Vec2::new(175.0, screen_height() / 2.0 - 50.0),
+            pos: Vec2::new(175.0, screen_height() / 2.0 - 30.0),
         })
         .build();
     let wire_2 = world
@@ -79,7 +80,7 @@ async fn main() {
         .with(Wire::default())
         .with(Pos {
             orientation: Orientation::Right,
-            pos: Vec2::new(225.0, screen_height() / 2.0 + 50.0),
+            pos: Vec2::new(225.0, screen_height() / 2.0 + 80.0),
         })
         .build();
     let wire_3 = world
@@ -189,7 +190,18 @@ async fn main() {
                 ui::top_panel::render_top_panel(ui, &mut world);
             });
         });
+
+        if is_mouse_button_pressed(MouseButton::Left) {
+            ui::mouse_click::handle_mouse_click(&mut world);
+        }
+
+        if is_mouse_button_pressed(MouseButton::Right) {
+            ui::mouse_click::handle_mouse_right_click(&mut world);
+        }
+
         egui_macroquad::draw();
+
+        // dbg!(world.fetch::<resources::AddingWire>().0);
 
         next_frame().await;
         world.fetch_mut::<resources::Tick>().incr();

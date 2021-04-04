@@ -96,51 +96,25 @@ impl Node<2, 1> for XnorNode {
 }
 
 pub fn add_node_systems<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> DispatcherBuilder<'a, 'b> {
-    builder
-        .with(WireSys, "wire_sys", &[])
-        .with(
-            ElectroSys::<OnNode, 0, 1>::default(),
-            "on_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<OffNode, 0, 1>::default(),
-            "off_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<NotNode, 1, 1>::default(),
-            "not_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<AndNode, 2, 1>::default(),
-            "and_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<OrNode, 2, 1>::default(),
-            "or_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<NandNode, 2, 1>::default(),
-            "nand_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<NorNode, 2, 1>::default(),
-            "nor_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<XorNode, 2, 1>::default(),
-            "xor_node_sys",
-            &["wire_sys"],
-        )
-        .with(
-            ElectroSys::<XnorNode, 2, 1>::default(),
-            "xnor_node_sys",
-            &["wire_sys"],
-        )
+    macro_rules! add_systems {
+        ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
+            builder
+                .with(WireSys, "wire_sys", &[])
+                $(
+                    .with(ElectroSys::<$node, $i, $o>::default(), stringify!($node), &[])
+                )*
+        };
+    }
+
+    add_systems!(
+        [OnNode, 0, 1],
+        [OffNode, 0, 1],
+        [NotNode, 1, 1],
+        [AndNode, 2, 1],
+        [OrNode, 2, 1],
+        [NandNode, 2, 1],
+        [NorNode, 2, 1],
+        [XorNode, 2, 1],
+        [XnorNode, 2, 1],
+    )
 }

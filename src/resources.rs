@@ -1,4 +1,5 @@
-use macroquad::texture::Texture2D;
+use macroquad::{prelude::Vec2, texture::Texture2D};
+use specs::Entity;
 
 use crate::components::nodes::NodeTy;
 
@@ -10,6 +11,9 @@ pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 
 #[derive(Default)]
 pub struct AddingNode(pub Option<NodeTy>);
+
+#[derive(Default)]
+pub struct AddingWire(pub Option<(Entity, Option<Vec2>)>);
 
 #[derive(Clone)]
 pub enum UiSignal {
