@@ -1,4 +1,4 @@
-use crate::components::Wire;
+use crate::nodes::Wire;
 use crate::Connected;
 use crate::{components::Node, resources::Tick};
 use core::marker::PhantomData;

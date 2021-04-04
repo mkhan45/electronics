@@ -1,4 +1,4 @@
-use crate::components::Wire;
+use crate::nodes::Wire;
 use crate::resources::UiSignal;
 use core::marker::PhantomData;
 use egui_macroquad;

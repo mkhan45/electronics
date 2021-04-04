@@ -30,6 +30,7 @@ pub fn handle_mouse_click(world: &mut World) {
         place_node_systems!(
             [OnNode, 0, 1],
             [OffNode, 0, 1],
+            [Wire, 1, 1],
             [NotNode, 1, 1],
             [AndNode, 2, 1],
             [OrNode, 2, 1],
@@ -84,6 +85,7 @@ pub fn handle_mouse_right_click(world: &mut World) {
             place_wire_systems!(
                 [OnNode, 0, 1],
                 [OffNode, 0, 1],
+                [Wire, 1, 1],
                 [NotNode, 1, 1],
                 [AndNode, 2, 1],
                 [OrNode, 2, 1],

@@ -1,5 +1,6 @@
-use crate::components::{Connected, Node, Pos, Wire};
+use crate::components::{Connected, Node, Pos};
 use crate::resources::AddingWire;
+use crate::Wire;
 use core::marker::PhantomData;
 use macroquad::prelude::*;
 use specs::prelude::*;

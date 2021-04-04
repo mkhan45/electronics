@@ -19,6 +19,7 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
                 };
             }
 
+            node_button!("Connection Node", Wire);
             node_button!("On Node", OnNode);
             node_button!("Off Node", OffNode);
             node_button!("Not Node", NotNode);

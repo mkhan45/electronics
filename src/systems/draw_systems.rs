@@ -1,3 +1,5 @@
+use crate::Connected;
+use crate::Wire;
 use crate::{components::nodes::NandNode, nodes::NotNode};
 use crate::{components::nodes::NorNode, nodes::OnNode};
 use crate::{components::nodes::XnorNode, nodes::XorNode};
@@ -5,7 +7,6 @@ use crate::{
     components::nodes::{OffNode, OrNode},
     resources::TickProgress,
 };
-use crate::{components::Wire, Connected};
 use crate::{
     components::{nodes::AndNode, Node},
     resources::Textures,
@@ -90,7 +91,8 @@ where
 
                         // horizontal
                         {
-                            let midpoint = sp.x + (red_dist - vert_dist.abs()).max(0.0);
+                            let midpoint = sp.x
+                                + horizontal_dist.signum() * (red_dist - vert_dist.abs()).max(0.0);
 
                             draw_line(
                                 sp.x,
@@ -110,15 +112,20 @@ where
                                 if wire.input_state { WHITE } else { RED },
                             );
 
+                            let (new_col, old_col) = if wire.input_state {
+                                (RED, WHITE)
+                            } else {
+                                (WHITE, RED)
+                            };
+
                             draw_circle(
                                 sp.x,
                                 ep.y,
                                 5.0,
-                                // 0.1 is a magic number but it seems to work pretty well
-                                if wire.input_state && delta >= 0.5 {
-                                    RED
+                                if wire.input_state && delta >= vert_dist.abs() / total_dist {
+                                    new_col
                                 } else {
-                                    WHITE
+                                    old_col
                                 },
                             );
                         }
@@ -182,15 +189,20 @@ where
                                 );
                             }
 
+                            let (new_col, old_col) = if wire.input_state {
+                                (RED, WHITE)
+                            } else {
+                                (WHITE, RED)
+                            };
+
                             draw_circle(
                                 ep.x,
                                 sp.y,
                                 5.0,
-                                // 0.9 is a magic number but it seems to work pretty well
-                                if wire.input_state && delta >= 0.9 {
-                                    RED
+                                if wire.input_state && delta >= 1.0 {
+                                    new_col
                                 } else {
-                                    WHITE
+                                    old_col
                                 },
                             );
                         } else {
@@ -396,5 +408,12 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                 );
             }),
             input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+        })
+        .with_thread_local(DrawNodeSys {
+            node: PhantomData::<Wire>,
+            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
+                draw_circle(pos.x, pos.y, 10.0, WHITE);
+            }),
+            input_offsets: [Vec2::new(0.0, 0.0)],
         })
 }

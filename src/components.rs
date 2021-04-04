@@ -33,19 +33,6 @@ where
     }
 }
 
-#[derive(Component, Default)]
-pub struct Wire {
-    pub input_state: bool,
-    pub output_state: bool,
-    pub changed_input: bool,
-}
-
-impl Node<1, 1> for Wire {
-    fn calculate_state(i: [bool; 1]) -> [bool; 1] {
-        i
-    }
-}
-
 #[derive(Clone, Copy)]
 pub enum Orientation {
     Up,
