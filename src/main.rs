@@ -11,10 +11,7 @@ mod svg;
 mod systems;
 mod ui;
 
-use components::{
-    nodes::{self, add_node_systems},
-    Orientation,
-};
+use components::nodes::{self, add_node_systems};
 use components::{Connected, Pos};
 use systems::draw_systems::add_draw_system;
 use systems::simulation_systems::*;
@@ -32,7 +29,8 @@ async fn main() {
     };
 
     let mut draw_dispatcher = {
-        let mut builder = DispatcherBuilder::new();
+        let mut builder =
+            DispatcherBuilder::new().with_thread_local(systems::ui_systems::CurrentModeSys);
         builder = add_draw_system(builder);
         builder.build()
     };
@@ -175,6 +173,12 @@ async fn main() {
         }
 
         egui_macroquad::ui(|egui_ctx| {
+            use egui::{FontDefinitions, TextStyle};
+            let mut fonts = FontDefinitions::default();
+            fonts.family_and_size.get_mut(&TextStyle::Button).unwrap().1 = 24.0;
+            fonts.family_and_size.get_mut(&TextStyle::Body).unwrap().1 = 28.0;
+            egui_ctx.set_fonts(fonts);
+
             egui::TopPanel::top("SIMple Electronics").show(egui_ctx, |ui| {
                 ui::top_panel::render_top_panel(ui, &mut world);
             });

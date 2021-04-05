@@ -263,7 +263,7 @@ impl<'a> System<'a> for DrawGridSys {
 
     fn run(&mut self, grid_mode: Self::SystemData) {
         use crate::components::SNAP;
-        let s = 3;
+        let s = 4;
 
         match *grid_mode {
             GridMode::Lines => {
