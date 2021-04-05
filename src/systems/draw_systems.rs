@@ -199,11 +199,7 @@ where
                                 ep.x,
                                 sp.y,
                                 5.0,
-                                if wire.input_state && delta >= 1.0 {
-                                    new_col
-                                } else {
-                                    old_col
-                                },
+                                if delta >= 1.0 { new_col } else { old_col },
                             );
                         } else {
                             draw_line(
