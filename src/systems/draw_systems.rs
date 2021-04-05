@@ -270,7 +270,6 @@ impl<'a> System<'a> for DrawGridSys {
                 // lines
                 let base_width = 0.5;
                 let wider_width = 1.5;
-                let s = 3;
 
                 (0..(screen_width() / SNAP).ceil() as usize)
                     .map(|i| (i, if i % s == 0 { wider_width } else { base_width }))
