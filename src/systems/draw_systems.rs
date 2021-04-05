@@ -122,7 +122,7 @@ where
                                 sp.x,
                                 ep.y,
                                 5.0,
-                                if wire.input_state && delta >= vert_dist.abs() / total_dist {
+                                if delta >= vert_dist.abs() / total_dist {
                                     new_col
                                 } else {
                                     old_col
@@ -199,7 +199,7 @@ where
                                 ep.x,
                                 sp.y,
                                 5.0,
-                                if delta >= 1.0 { new_col } else { old_col },
+                                if delta >= 0.9 { new_col } else { old_col },
                             );
                         } else {
                             draw_line(
