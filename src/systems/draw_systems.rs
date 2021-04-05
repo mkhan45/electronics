@@ -264,23 +264,39 @@ impl<'a> System<'a> for DrawGridSys {
     fn run(&mut self, _: Self::SystemData) {
         use crate::components::SNAP;
 
-        let base_rad = 1.5;
-        let wider_rad = 3.0;
-        let grid_incr = 3;
+        // lines
+        let base_width = 0.5;
+        let wider_width = 1.5;
+        let wi = 3;
 
-        let x_positions = (0..(screen_width() / SNAP).ceil() as usize)
-            .map(|i| (i, i % grid_incr == 0))
-            .map(|(i, is_big)| (i as f32 * SNAP, is_big));
-        let y_positions = (0..(screen_height() / SNAP).ceil() as usize)
-            .map(|i| (i, i % grid_incr == 0))
-            .map(|(i, is_big)| (i as f32 * SNAP, is_big));
+        (0..(screen_width() / SNAP).ceil() as usize)
+            .map(|i| (i, if i % wi == 0 { wider_width } else { base_width }))
+            .map(|(i, width)| (i as f32 * SNAP, width))
+            .for_each(|(x, width)| draw_line(x, 0.0, x, screen_height(), width, DARKGRAY));
 
-        for (x, b1) in x_positions {
-            for (y, b2) in y_positions.clone() {
-                let rad = if b1 && b2 { wider_rad } else { base_rad };
-                draw_circle(x, y, rad, Color::from_rgba(155, 155, 155, 255));
-            }
-        }
+        (0..(screen_height() / SNAP).ceil() as usize)
+            .map(|i| (i, if i % wi == 0 { wider_width } else { base_width }))
+            .map(|(i, width)| (i as f32 * SNAP, width))
+            .for_each(|(y, width)| draw_line(0.0, y, screen_width(), y, width, DARKGRAY));
+
+        // dots
+        // let base_rad = 1.5;
+        // let wider_rad = 3.0;
+        // let grid_incr = 3;
+
+        // let x_positions = (0..(screen_width() / SNAP).ceil() as usize)
+        //     .map(|i| (i, i % grid_incr == 0))
+        //     .map(|(i, is_big)| (i as f32 * SNAP, is_big));
+        // let y_positions = (0..(screen_height() / SNAP).ceil() as usize)
+        //     .map(|i| (i, i % grid_incr == 0))
+        //     .map(|(i, is_big)| (i as f32 * SNAP, is_big));
+
+        // for (x, b1) in x_positions {
+        //     for (y, b2) in y_positions.clone() {
+        //         let rad = if b1 && b2 { wider_rad } else { base_rad };
+        //         draw_circle(x, y, rad, Color::from_rgba(155, 155, 155, 255));
+        //     }
+        // }
     }
 }
 
