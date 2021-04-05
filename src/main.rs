@@ -73,34 +73,28 @@ async fn main() {
     let wire_1 = world
         .create_entity()
         .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(175.0, screen_height() / 2.0 - 30.0),
-        })
+        .with(Pos::from_vec(Vec2::new(
+            175.0,
+            screen_height() / 2.0 - 30.0,
+        )))
         .build();
     let wire_2 = world
         .create_entity()
         .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(225.0, screen_height() / 2.0 + 80.0),
-        })
+        .with(Pos::from_vec(Vec2::new(
+            225.0,
+            screen_height() / 2.0 + 80.0,
+        )))
         .build();
     let wire_3 = world
         .create_entity()
         .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(650.0, screen_height() / 3.0),
-        })
+        .with(Pos::from_vec(Vec2::new(650.0, screen_height() / 3.0)))
         .build();
     let wire_4 = world
         .create_entity()
         .with(Wire::default())
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(650.0, 2.0 * screen_height() / 3.0),
-        })
+        .with(Pos::from_vec(Vec2::new(650.0, 2.0 * screen_height() / 3.0)))
         .build();
 
     world
@@ -110,10 +104,7 @@ async fn main() {
             inputs: [],
             outputs: [Some(wire_1)],
         })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(50.0, screen_height() / 2.0 - 50.0),
-        })
+        .with(Pos::from_vec(Vec2::new(50.0, screen_height() / 2.0 - 50.0)))
         .build();
 
     world
@@ -123,10 +114,7 @@ async fn main() {
             inputs: [],
             outputs: [Some(wire_2)],
         })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(50.0, screen_height() / 2.0 + 50.0),
-        })
+        .with(Pos::from_vec(Vec2::new(50.0, screen_height() / 2.0 + 50.0)))
         .build();
 
     world
@@ -136,10 +124,7 @@ async fn main() {
             inputs: [Some(wire_1), Some(wire_2)],
             outputs: [Some(wire_3)],
         })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(350.0, screen_height() / 3.0),
-        })
+        .with(Pos::from_vec(Vec2::new(350.0, screen_height() / 3.0)))
         .build();
 
     world
@@ -149,10 +134,7 @@ async fn main() {
             inputs: [Some(wire_2), Some(wire_1)],
             outputs: [Some(wire_4)],
         })
-        .with(Pos {
-            orientation: Orientation::Right,
-            pos: Vec2::new(350.0, 2.0 * screen_height() / 3.0),
-        })
+        .with(Pos::from_vec(Vec2::new(350.0, 2.0 * screen_height() / 3.0)))
         .build();
 
     world.insert(resources::Tick(0));

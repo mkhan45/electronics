@@ -1,3 +1,4 @@
+use crate::components::round_to_snap;
 use crate::components::{Connected, Node, Pos};
 use crate::resources::AddingWire;
 use crate::Wire;
@@ -30,7 +31,7 @@ where
         (mut nodes, positions, mut wires, mut adding_wire, entities): Self::SystemData,
     ) {
         let (mx, my) = mouse_position();
-        let mp = Vec2::new(mx, my);
+        let mp = Vec2::new(round_to_snap(mx), round_to_snap(my));
 
         let filtered = (&mut nodes, &positions, &entities)
             .join()

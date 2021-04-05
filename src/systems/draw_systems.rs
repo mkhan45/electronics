@@ -230,15 +230,16 @@ impl<'a> System<'a> for TempWireDrawSys {
     type SystemData = (Read<'a, AddingWire>, ReadStorage<'a, Pos>);
 
     fn run(&mut self, (adding_wire_state, position_storage): Self::SystemData) {
-        let color = Color::from_rgba(255, 255, 255, 100);
+        use crate::components::round_to_snap as snap;
+        let color = LIGHTGRAY;
         match adding_wire_state.0 {
             Some((e, _, None, Some(_))) => {
-                let start_pos = position_storage.get(e).unwrap().pos;
+                let start_pos = Pos::from_vec(position_storage.get(e).unwrap().pos).pos;
 
                 draw_line(
                     start_pos.x,
                     start_pos.y,
-                    mouse_position().0,
+                    snap(mouse_position().0),
                     start_pos.y,
                     5.0,
                     color,
@@ -246,18 +247,43 @@ impl<'a> System<'a> for TempWireDrawSys {
             }
             Some((_, _, Some(x_pos), Some(y_pos))) => {
                 let (mx, my) = mouse_position();
+                let pos = Pos::from_vec(Vec2::new(mx, my)).pos;
 
-                draw_line(x_pos, y_pos, x_pos, my, 5.0, color);
-                draw_line(x_pos, my, mx, my, 5.0, color);
+                draw_line(snap(x_pos), snap(y_pos), snap(x_pos), pos.y, 5.0, color);
+                draw_line(snap(x_pos), pos.y, pos.x, pos.y, 5.0, color);
             }
             _ => return,
         };
     }
 }
 
+pub struct DrawGridSys;
+impl<'a> System<'a> for DrawGridSys {
+    type SystemData = ();
+
+    fn run(&mut self, _: Self::SystemData) {
+        use crate::components::SNAP;
+
+        let base_width = 0.5;
+        let wider_width = 1.5;
+        let wi = 3;
+
+        (0..(screen_width() / SNAP).ceil() as usize)
+            .map(|i| (i, if i % wi == 0 { wider_width } else { base_width }))
+            .map(|(i, width)| (i as f32 * SNAP, width))
+            .for_each(|(x, width)| draw_line(x, 0.0, x, screen_height(), width, DARKGRAY));
+
+        (0..(screen_height() / SNAP).ceil() as usize)
+            .map(|i| (i, if i % wi == 0 { wider_width } else { base_width }))
+            .map(|(i, width)| (i as f32 * SNAP, width))
+            .for_each(|(y, width)| draw_line(0.0, y, screen_width(), y, width, DARKGRAY));
+    }
+}
+
 pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> DispatcherBuilder<'a, 'b> {
     builder
         .with_thread_local(TempWireDrawSys)
+        .with_thread_local(DrawGridSys)
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OnNode>,
             draw_fn: Arc::new(|Pos { pos, .. }, _| {

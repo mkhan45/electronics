@@ -1,6 +1,9 @@
-use crate::components::{Node, Orientation};
 use crate::Connected;
 use crate::Pos;
+use crate::{
+    components::{Node, Orientation},
+    ui,
+};
 use core::marker::PhantomData;
 use macroquad::prelude::*;
 use specs::prelude::*;
@@ -25,17 +28,10 @@ where
 
     fn run(&mut self, (mut node_storage, mut position_storage, entities): Self::SystemData) {
         let mp = mouse_position();
-
         entities
             .build_entity()
             .with(Connected::<N, I, O>::default(), &mut node_storage)
-            .with(
-                Pos {
-                    orientation: Orientation::Right,
-                    pos: mp.into(),
-                },
-                &mut position_storage,
-            )
+            .with(Pos::from_vec(mp.into()), &mut position_storage)
             .build();
     }
 }

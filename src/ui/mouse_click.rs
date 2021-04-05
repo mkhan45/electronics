@@ -58,13 +58,7 @@ pub fn handle_mouse_right_click(world: &mut World) {
             ))));
             world
                 .write_storage::<Pos>()
-                .insert(
-                    wire_entity,
-                    Pos {
-                        pos: Vec2::new(mx, y_pos),
-                        orientation: Orientation::Right,
-                    },
-                )
+                .insert(wire_entity, Pos::from_vec(Vec2::new(mx, y_pos)))
                 .unwrap();
         }
         _ => {

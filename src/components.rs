@@ -46,3 +46,19 @@ pub struct Pos {
     pub orientation: Orientation,
     pub pos: Vec2,
 }
+
+pub const SNAP: f32 = 75.0;
+
+pub fn round_to_snap(x: f32) -> f32 {
+    (x / SNAP).round() * SNAP
+}
+
+impl Pos {
+    pub fn from_vec(p: Vec2) -> Self {
+        let pos = Vec2::new((p.x / SNAP).round() * SNAP, (p.y / SNAP).round() * SNAP);
+        Pos {
+            orientation: Orientation::Right,
+            pos,
+        }
+    }
+}
