@@ -1,9 +1,6 @@
+use crate::components::Node;
 use crate::Connected;
 use crate::Pos;
-use crate::{
-    components::{Node, Orientation},
-    ui,
-};
 use core::marker::PhantomData;
 use macroquad::prelude::*;
 use specs::prelude::*;

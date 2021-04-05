@@ -1,9 +1,6 @@
 use crate::systems::place_node_sys::PlaceNodeSys;
 use crate::systems::place_wire_sys::WirePlaceSys;
-use crate::{
-    components::{Orientation, Pos},
-    resources::AddingWire,
-};
+use crate::{components::Pos, resources::AddingWire};
 use macroquad::prelude::*;
 use specs::prelude::*;
 

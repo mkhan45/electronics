@@ -1,4 +1,4 @@
-use crate::resources;
+use crate::resources::{self, GridMode};
 use crate::ResetSys;
 use crate::{components::nodes, UiSignal};
 use egui::menu;
@@ -35,6 +35,14 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
             ResetSys.run_now(&world);
             world.insert(resources::Tick(0));
         }
+
+        let mut grid_mode = *world.fetch::<GridMode>();
+        menu::menu(ui, "Grid Mode", |ui| {
+            ui.radio_value(&mut grid_mode, GridMode::Lines, "Lines");
+            ui.radio_value(&mut grid_mode, GridMode::Dots, "Dots");
+            ui.radio_value(&mut grid_mode, GridMode::Off, "Off");
+        });
+        world.insert(grid_mode);
 
         if ui.button("Remove All").clicked() {
             world.delete_all();

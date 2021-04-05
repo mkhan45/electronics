@@ -31,3 +31,16 @@ impl Tick {
         self.0 += 1;
     }
 }
+
+#[derive(Eq, PartialEq, Copy, Clone)]
+pub enum GridMode {
+    Lines,
+    Dots,
+    Off,
+}
+
+impl Default for GridMode {
+    fn default() -> Self {
+        GridMode::Lines
+    }
+}

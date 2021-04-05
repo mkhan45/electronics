@@ -69,6 +69,7 @@ async fn main() {
     world.insert(resources::AddingNode(None));
     world.insert(resources::AddingWire(None));
     world.insert(resources::UiSignals(Vec::new()));
+    world.insert(resources::GridMode::default());
 
     let wire_1 = world
         .create_entity()
