@@ -38,6 +38,7 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
 
         let mut grid_mode = *world.fetch::<GridMode>();
         menu::menu(ui, "Grid Mode", |ui| {
+            ui.radio_value(&mut grid_mode, GridMode::CrossHatches, "Cross Hatches");
             ui.radio_value(&mut grid_mode, GridMode::Lines, "Lines");
             ui.radio_value(&mut grid_mode, GridMode::Dots, "Dots");
             ui.radio_value(&mut grid_mode, GridMode::Off, "Off");

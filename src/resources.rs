@@ -36,11 +36,12 @@ impl Tick {
 pub enum GridMode {
     Lines,
     Dots,
+    CrossHatches,
     Off,
 }
 
 impl Default for GridMode {
     fn default() -> Self {
-        GridMode::Lines
+        GridMode::CrossHatches
     }
 }
