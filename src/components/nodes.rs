@@ -102,6 +102,24 @@ impl Node<2, 1> for XnorNode {
     }
 }
 
+#[macro_export]
+macro_rules! all_nodes {
+    ($macro:ident) => {
+        $macro!(
+            [OnNode, 0, 1],
+            [OffNode, 0, 1],
+            [Wire, 1, 1],
+            [NotNode, 1, 1],
+            [AndNode, 2, 1],
+            [OrNode, 2, 1],
+            [NandNode, 2, 1],
+            [NorNode, 2, 1],
+            [XorNode, 2, 1],
+            [XnorNode, 2, 1],
+        )
+    };
+}
+
 pub fn add_node_systems<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> DispatcherBuilder<'a, 'b> {
     macro_rules! add_systems {
         ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
@@ -113,16 +131,5 @@ pub fn add_node_systems<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatche
         };
     }
 
-    add_systems!(
-        [OnNode, 0, 1],
-        [OffNode, 0, 1],
-        [Wire, 1, 1],
-        [NotNode, 1, 1],
-        [AndNode, 2, 1],
-        [OrNode, 2, 1],
-        [NandNode, 2, 1],
-        [NorNode, 2, 1],
-        [XorNode, 2, 1],
-        [XnorNode, 2, 1],
-    )
+    all_nodes!(add_systems)
 }

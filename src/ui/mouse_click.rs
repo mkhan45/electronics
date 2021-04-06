@@ -8,7 +8,19 @@ use crate::nodes;
 use crate::resources;
 
 pub fn handle_mouse_click(world: &mut World) {
-    world.insert(resources::AddingWire(None));
+    // clear adding wire including removing the wire entity
+    {
+        let adding_wire_state = world.fetch::<AddingWire>().0;
+        if let Some((_, wire_entity, _, _)) = adding_wire_state {
+            dbg!(wire_entity);
+            world.delete_entity(wire_entity).unwrap();
+
+            crate::systems::cleanup_sys::run_cleanup_sys(world);
+
+            std::mem::drop(adding_wire_state);
+            world.insert(AddingWire(None));
+        }
+    }
     let node = world.fetch::<resources::AddingNode>();
 
     if let resources::AddingNode(Some(n)) = &*node {
@@ -24,18 +36,8 @@ pub fn handle_mouse_click(world: &mut World) {
                     };
                 }
 
-        place_node_systems!(
-            [OnNode, 0, 1],
-            [OffNode, 0, 1],
-            [Wire, 1, 1],
-            [NotNode, 1, 1],
-            [AndNode, 2, 1],
-            [OrNode, 2, 1],
-            [NandNode, 2, 1],
-            [NorNode, 2, 1],
-            [XorNode, 2, 1],
-            [XnorNode, 2, 1]
-        );
+        use crate::all_nodes;
+        all_nodes!(place_node_systems);
 
         std::mem::drop(node);
         world.insert(resources::AddingNode(None));
@@ -73,18 +75,8 @@ pub fn handle_mouse_right_click(world: &mut World) {
                 };
             }
 
-            place_wire_systems!(
-                [OnNode, 0, 1],
-                [OffNode, 0, 1],
-                [Wire, 1, 1],
-                [NotNode, 1, 1],
-                [AndNode, 2, 1],
-                [OrNode, 2, 1],
-                [NandNode, 2, 1],
-                [NorNode, 2, 1],
-                [XorNode, 2, 1],
-                [XnorNode, 2, 1]
-            );
+            use crate::all_nodes;
+            all_nodes!(place_wire_systems);
         }
     };
 }
