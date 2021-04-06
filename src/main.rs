@@ -1,6 +1,5 @@
 use crate::nodes::Wire;
 use crate::resources::UiSignal;
-use core::marker::PhantomData;
 use egui_macroquad;
 use macroquad::prelude::*;
 use specs::prelude::*;
@@ -99,7 +98,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OnNode>,
+            node: nodes::SwitchNode::default(),
             inputs: [],
             outputs: [Some(wire_1)],
         })
@@ -109,7 +108,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::OnNode>,
+            node: nodes::SwitchNode { state: true },
             inputs: [],
             outputs: [Some(wire_2)],
         })
@@ -119,7 +118,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::XnorNode>,
+            node: nodes::XorNode::default(),
             inputs: [Some(wire_1), Some(wire_2)],
             outputs: [Some(wire_3)],
         })
@@ -129,7 +128,7 @@ async fn main() {
     world
         .create_entity()
         .with(Connected {
-            node: PhantomData::<nodes::NandNode>,
+            node: nodes::AndNode::default(),
             inputs: [Some(wire_2), Some(wire_1)],
             outputs: [Some(wire_4)],
         })
@@ -137,6 +136,7 @@ async fn main() {
         .build();
 
     world.insert(resources::Tick(0));
+    world.insert(resources::TickFrames(60));
 
     let mut last_fps = [60i32; 256];
 
@@ -146,7 +146,7 @@ async fn main() {
         last_fps[i % last_fps.len()] = get_fps();
 
         // let tick_frames: usize = (last_fps.iter().sum::<i32>() / last_fps.len() as i32) as usize;
-        let tick_frames = 144;
+        let tick_frames = world.fetch::<resources::TickFrames>().0;
 
         world.insert(resources::TickProgress(
             (i % tick_frames) as f64 / tick_frames as f64,

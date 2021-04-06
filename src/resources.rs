@@ -35,6 +35,9 @@ impl Tick {
     }
 }
 
+#[derive(Clone, Copy, Default)]
+pub struct TickFrames(pub usize);
+
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub enum GridMode {
     Lines,

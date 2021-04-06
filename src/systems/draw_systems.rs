@@ -1,3 +1,4 @@
+use crate::nodes::SwitchNode;
 use crate::Wire;
 use crate::{components::nodes::NandNode, nodes::NotNode};
 use crate::{components::nodes::NorNode, nodes::OnNode};
@@ -22,7 +23,7 @@ where
     N: Node<I, O> + 'static,
 {
     node: PhantomData<N>,
-    draw_fn: Arc<dyn Fn(Pos, &Textures)>,
+    draw_fn: Arc<dyn Fn(&N, Pos, &Textures)>,
     input_offsets: [Vec2; I],
 }
 
@@ -220,7 +221,7 @@ where
                         }
                     }
                 });
-            (self.draw_fn)(*self_pos, &textures);
+            (self.draw_fn)(&node.node, *self_pos, &textures);
         });
     }
 }
@@ -336,21 +337,21 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
         .with_thread_local(DrawGridSys)
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OnNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, _| {
                 draw_circle(pos.x, pos.y, 25.0, RED);
             }),
             input_offsets: [],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OffNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, _| {
                 draw_circle(pos.x, pos.y, 25.0, WHITE);
             }),
             input_offsets: [],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NotNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("NOT_GATE").unwrap();
                 let w = 50.0;
                 let h = 50.0;
@@ -369,7 +370,7 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<AndNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("AND_GATE").unwrap();
                 let w = 75.0;
                 let h = 50.0;
@@ -384,11 +385,11 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OrNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("OR_GATE").unwrap();
                 let w = 100.0;
                 let h = 75.0;
@@ -403,11 +404,11 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NandNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("NAND_GATE").unwrap();
                 let w = 100.0;
                 let h = 75.0;
@@ -422,11 +423,11 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NorNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("NOR_GATE").unwrap();
                 let w = 100.0;
                 let h = 75.0;
@@ -441,11 +442,11 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<XorNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("XOR_GATE").unwrap();
                 let w = 100.0;
                 let h = 75.0;
@@ -460,11 +461,11 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+            input_offsets: [Vec2::new(-26.0, -15.0), Vec2::new(-26.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<XnorNode>,
-            draw_fn: Arc::new(|Pos { pos, .. }, textures: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, textures: &Textures| {
                 let texture = textures.0.get("XNOR_GATE").unwrap();
                 let w = 100.0;
                 let h = 75.0;
@@ -479,13 +480,23 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -10.0), Vec2::new(-25.0, 10.0)],
+            input_offsets: [Vec2::new(-26.5, -15.0), Vec2::new(-26.5, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<Wire>,
-            draw_fn: Arc::new(|Pos { pos, .. }, _: &Textures| {
+            draw_fn: Arc::new(|_, Pos { pos, .. }, _: &Textures| {
                 draw_circle(pos.x, pos.y, 10.0, WHITE);
             }),
             input_offsets: [Vec2::new(0.0, 0.0)],
+        })
+        .with_thread_local(DrawNodeSys {
+            node: PhantomData::<SwitchNode>,
+            draw_fn: Arc::new(|node: &SwitchNode, Pos { pos, .. }, _: &Textures| {
+                let color = if node.state { RED } else { WHITE };
+                draw_rectangle(pos.x - 30.0, pos.y - 30.0, 60.0, 60.0, WHITE);
+                draw_circle(pos.x, pos.y, 25.0, color);
+                draw_circle_lines(pos.x, pos.y, 25.0, 2.5, BLACK);
+            }),
+            input_offsets: [],
         })
 }

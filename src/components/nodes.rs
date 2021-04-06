@@ -11,7 +11,7 @@ pub struct Wire {
 }
 
 impl Node<1, 1> for Wire {
-    fn calculate_state(i: [bool; 1]) -> [bool; 1] {
+    fn calculate_state(&self, i: [bool; 1]) -> [bool; 1] {
         i
     }
 }
@@ -28,12 +28,13 @@ pub enum NodeTy {
     NorNode,
     XorNode,
     XnorNode,
+    SwitchNode,
 }
 
 #[derive(Default)]
 pub struct OnNode;
 impl Node<0, 1> for OnNode {
-    fn calculate_state(_: [bool; 0]) -> [bool; 1] {
+    fn calculate_state(&self, _: [bool; 0]) -> [bool; 1] {
         [true]
     }
 }
@@ -41,7 +42,7 @@ impl Node<0, 1> for OnNode {
 #[derive(Default)]
 pub struct OffNode;
 impl Node<0, 1> for OffNode {
-    fn calculate_state(_: [bool; 0]) -> [bool; 1] {
+    fn calculate_state(&self, _: [bool; 0]) -> [bool; 1] {
         [false]
     }
 }
@@ -49,7 +50,7 @@ impl Node<0, 1> for OffNode {
 #[derive(Default)]
 pub struct NotNode;
 impl Node<1, 1> for NotNode {
-    fn calculate_state(input: [bool; 1]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 1]) -> [bool; 1] {
         [!input[0]]
     }
 }
@@ -57,7 +58,7 @@ impl Node<1, 1> for NotNode {
 #[derive(Default)]
 pub struct AndNode;
 impl Node<2, 1> for AndNode {
-    fn calculate_state(input: [bool; 2]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [input[0] && input[1]]
     }
 }
@@ -65,7 +66,7 @@ impl Node<2, 1> for AndNode {
 #[derive(Default)]
 pub struct OrNode;
 impl Node<2, 1> for OrNode {
-    fn calculate_state(input: [bool; 2]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [input[0] || input[1]]
     }
 }
@@ -73,7 +74,7 @@ impl Node<2, 1> for OrNode {
 #[derive(Default)]
 pub struct NandNode;
 impl Node<2, 1> for NandNode {
-    fn calculate_state(input: [bool; 2]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [!(input[0] && input[1])]
     }
 }
@@ -81,7 +82,7 @@ impl Node<2, 1> for NandNode {
 #[derive(Default)]
 pub struct NorNode;
 impl Node<2, 1> for NorNode {
-    fn calculate_state(input: [bool; 2]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [!(input[0] || input[1])]
     }
 }
@@ -89,7 +90,7 @@ impl Node<2, 1> for NorNode {
 #[derive(Default)]
 pub struct XorNode;
 impl Node<2, 1> for XorNode {
-    fn calculate_state(input: [bool; 2]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [input[0] ^ input[1]]
     }
 }
@@ -97,8 +98,19 @@ impl Node<2, 1> for XorNode {
 #[derive(Default)]
 pub struct XnorNode;
 impl Node<2, 1> for XnorNode {
-    fn calculate_state(input: [bool; 2]) -> [bool; 1] {
+    fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [!(input[0] ^ input[1])]
+    }
+}
+
+#[derive(Default)]
+pub struct SwitchNode {
+    pub state: bool,
+}
+
+impl Node<0, 1> for SwitchNode {
+    fn calculate_state(&self, _input: [bool; 0]) -> [bool; 1] {
+        [self.state]
     }
 }
 
@@ -116,6 +128,7 @@ macro_rules! all_nodes {
             [NorNode, 2, 1],
             [XorNode, 2, 1],
             [XnorNode, 2, 1],
+            [SwitchNode, 0, 1],
         )
     };
 }

@@ -8,16 +8,22 @@ use crate::nodes;
 use crate::resources;
 
 pub fn handle_mouse_click(world: &mut World) {
+    crate::systems::ui_systems::SwitchClickSys.run_now(world);
+
     // clear adding wire including removing the wire entity
     {
         let adding_wire_state = world.fetch::<AddingWire>().0;
         if let Some((_, wire_entity, _, _)) = adding_wire_state {
-            dbg!(wire_entity);
-            world.delete_entity(wire_entity).unwrap();
+            let wire_placed = {
+                let position_storage = world.read_storage::<Pos>();
+                position_storage.get(wire_entity).is_some()
+            };
 
-            crate::systems::cleanup_sys::run_cleanup_sys(world);
+            if !wire_placed {
+                world.delete_entity(wire_entity).unwrap();
 
-            std::mem::drop(adding_wire_state);
+                crate::systems::cleanup_sys::run_cleanup_sys(world);
+            }
             world.insert(AddingWire(None));
         }
     }

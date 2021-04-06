@@ -42,7 +42,7 @@ where
                 }
             }
 
-            let outputs = N::calculate_state(inputs);
+            let outputs = node.calculate_state(inputs);
 
             for (i, output_entity) in node.outputs.iter().enumerate() {
                 if let Some(e) = output_entity {

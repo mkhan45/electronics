@@ -32,6 +32,7 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
                 node_button!("Nor Node", NorNode);
                 node_button!("Xor Node", XorNode);
                 node_button!("Xnor Node", XnorNode);
+                node_button!("Switch Node", SwitchNode);
             });
 
             if ui.button("Restart Sim").clicked() || is_key_pressed(KeyCode::Space) {
@@ -54,9 +55,15 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
         });
 
         ui.with_layout(Layout::right_to_left(), |ui| {
-            ui.label("\t\t");
-            let current_mode = world.fetch::<CurrentModeText>();
-            ui.label(&current_mode.0);
+            {
+                ui.label("\t\t");
+                let current_mode = world.fetch::<CurrentModeText>();
+                ui.add(egui::Label::new(&current_mode.0).wrap(true));
+            }
+
+            let mut tick_frames = world.fetch::<resources::TickFrames>().0;
+            ui.add(egui::Slider::usize(&mut tick_frames, 1..=240).text("Frames per Tick"));
+            world.insert(resources::TickFrames(tick_frames));
         });
     });
 }

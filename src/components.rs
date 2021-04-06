@@ -1,13 +1,10 @@
-use core::marker::PhantomData;
 use macroquad::prelude::Vec2;
 use specs::{prelude::*, Component};
 
 pub mod nodes;
 
-pub trait Node<const I: usize, const O: usize> {
-    fn calculate_state(inputs: [bool; I]) -> [bool; O]
-    where
-        Self: Sized;
+pub trait Node<const I: usize, const O: usize>: Default {
+    fn calculate_state(&self, inputs: [bool; I]) -> [bool; O];
 }
 
 #[derive(Component)]
@@ -15,9 +12,18 @@ pub struct Connected<N, const I: usize, const O: usize>
 where
     N: Node<I, O> + 'static,
 {
-    pub node: PhantomData<N>,
+    pub node: N,
     pub inputs: [Option<Entity>; I],
     pub outputs: [Option<Entity>; O],
+}
+
+impl<N, const I: usize, const O: usize> Connected<N, I, O>
+where
+    N: Node<I, O> + 'static,
+{
+    pub fn calculate_state(&self, inputs: [bool; I]) -> [bool; O] {
+        self.node.calculate_state(inputs)
+    }
 }
 
 impl<N, const I: usize, const O: usize> Default for Connected<N, I, O>
@@ -26,7 +32,7 @@ where
 {
     fn default() -> Self {
         Connected {
-            node: PhantomData::<N>,
+            node: N::default(),
             inputs: [None; I],
             outputs: [None; O],
         }
