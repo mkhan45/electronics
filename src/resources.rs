@@ -9,14 +9,23 @@ pub struct TickProgress(pub f64);
 #[derive(Default)]
 pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 
-#[derive(Default)]
-pub struct AddingNode(pub Option<NodeTy>);
+#[derive(Copy, Clone)]
+pub enum UIState {
+    AddingNode(NodeTy),
+    AddingWire {
+        node_entity: Entity,
+        wire_entity: Entity,
+        x_pos: Option<f32>,
+        y_pos: Option<f32>,
+    },
+    Nothing,
+}
 
-// should probably not be a tuple struct
-// it goes
-// input node entity, wire entity, x pos, y pos
-#[derive(Default)]
-pub struct AddingWire(pub Option<(Entity, Entity, Option<f32>, Option<f32>)>);
+impl Default for UIState {
+    fn default() -> Self {
+        UIState::Nothing
+    }
+}
 
 #[derive(Clone)]
 pub enum UiSignal {

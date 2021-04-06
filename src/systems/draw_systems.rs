@@ -1,4 +1,5 @@
 use crate::nodes::SwitchNode;
+use crate::Pos;
 use crate::Wire;
 use crate::{components::nodes::NandNode, nodes::NotNode};
 use crate::{components::nodes::NorNode, nodes::OnNode};
@@ -6,12 +7,12 @@ use crate::{components::nodes::XnorNode, nodes::XorNode};
 use crate::{
     components::nodes::{OffNode, OrNode},
     resources::TickProgress,
+    resources::UIState,
 };
 use crate::{
     components::{nodes::AndNode, Node},
     resources::Textures,
 };
-use crate::{resources::AddingWire, Pos};
 use crate::{resources::GridMode, Connected};
 use core::marker::PhantomData;
 use macroquad::prelude::*;
@@ -228,13 +229,18 @@ where
 
 pub struct TempWireDrawSys;
 impl<'a> System<'a> for TempWireDrawSys {
-    type SystemData = (Read<'a, AddingWire>, ReadStorage<'a, Pos>);
+    type SystemData = (Read<'a, UIState>, ReadStorage<'a, Pos>);
 
-    fn run(&mut self, (adding_wire_state, position_storage): Self::SystemData) {
+    fn run(&mut self, (ui_state, position_storage): Self::SystemData) {
         use crate::components::round_to_snap as snap;
         let color = LIGHTGRAY;
-        match adding_wire_state.0 {
-            Some((e, _, None, Some(_))) => {
+        match *ui_state {
+            UIState::AddingWire {
+                node_entity: e,
+                x_pos: None,
+                y_pos: Some(_),
+                ..
+            } => {
                 let start_pos = Pos::from_vec(position_storage.get(e).unwrap().pos).pos;
 
                 draw_line(
@@ -246,15 +252,19 @@ impl<'a> System<'a> for TempWireDrawSys {
                     color,
                 );
             }
-            Some((_, _, Some(x_pos), Some(y_pos))) => {
+            UIState::AddingWire {
+                x_pos: Some(x_pos),
+                y_pos: Some(y_pos),
+                ..
+            } => {
                 let (mx, my) = mouse_position();
                 let pos = Pos::from_vec(Vec2::new(mx, my)).pos;
 
                 draw_line(snap(x_pos), snap(y_pos), snap(x_pos), pos.y, 5.0, color);
                 draw_line(snap(x_pos), pos.y, pos.x, pos.y, 5.0, color);
             }
-            _ => return,
-        };
+            _ => {}
+        }
     }
 }
 

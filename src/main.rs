@@ -63,8 +63,6 @@ async fn main() {
 
     dispatcher.setup(&mut world);
     draw_dispatcher.setup(&mut world);
-    world.insert(resources::AddingNode(None));
-    world.insert(resources::AddingWire(None));
     world.insert(resources::UiSignals(Vec::new()));
     world.insert(resources::GridMode::default());
 
@@ -167,7 +165,7 @@ async fn main() {
             std::mem::drop(signals_res);
 
             ui_signals.iter().for_each(|signal| match signal {
-                UiSignal::AddNode(ty) => world.insert(resources::AddingNode(Some(*ty))),
+                UiSignal::AddNode(ty) => world.insert(resources::UIState::AddingNode(*ty)),
             });
             world.insert(resources::UiSignals(Vec::new()));
         }
@@ -193,8 +191,6 @@ async fn main() {
         }
 
         egui_macroquad::draw();
-
-        // dbg!(world.fetch::<resources::AddingWire>().0);
 
         next_frame().await;
     }

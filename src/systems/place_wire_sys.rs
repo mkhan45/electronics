@@ -1,7 +1,6 @@
-use crate::components::round_to_snap;
 use crate::components::{Connected, Node, Pos};
-use crate::resources::AddingWire;
 use crate::Wire;
+use crate::{components::round_to_snap, resources::UIState};
 use core::marker::PhantomData;
 use macroquad::prelude::*;
 use specs::prelude::*;
@@ -22,14 +21,11 @@ where
         WriteStorage<'a, Connected<N, I, O>>,
         ReadStorage<'a, Pos>,
         WriteStorage<'a, Wire>,
-        Write<'a, AddingWire>,
+        Write<'a, UIState>,
         Entities<'a>,
     );
 
-    fn run(
-        &mut self,
-        (mut nodes, positions, mut wires, mut adding_wire, entities): Self::SystemData,
-    ) {
+    fn run(&mut self, (mut nodes, positions, mut wires, mut ui_state, entities): Self::SystemData) {
         let (mx, my) = mouse_position();
         let mp = Vec2::new(round_to_snap(mx), round_to_snap(my));
 
@@ -37,8 +33,8 @@ where
             .join()
             .filter(|(_, pos, _)| (pos.pos - mp).length() < 35.0);
 
-        match adding_wire.0 {
-            Some((_, wire_entity, _, _)) => {
+        match *ui_state {
+            UIState::AddingWire { wire_entity, .. } => {
                 for (node, _, _) in filtered {
                     // current node is potential wire output
                     let first_empty = node.inputs.iter().enumerate().find_map(|(i, o)| {
@@ -51,12 +47,12 @@ where
 
                     if let Some(i) = first_empty {
                         node.inputs[i] = Some(wire_entity);
-                        *adding_wire = AddingWire(None);
+                        *ui_state = UIState::Nothing;
                         break;
                     }
                 }
             }
-            None => {
+            _ => {
                 for (node, Pos { pos, .. }, node_entity) in filtered {
                     // current node is potential wire input
                     let first_empty = node.outputs.iter().enumerate().find_map(|(i, o)| {
@@ -68,14 +64,14 @@ where
                     });
 
                     if first_empty.is_none() && O == 1 {
-                        let wire_e = node.outputs[0].unwrap();
-                        let wire_pos = positions.get(wire_e).unwrap();
-                        *adding_wire = AddingWire(Some((
+                        let wire_entity = node.outputs[0].unwrap();
+                        let wire_pos = positions.get(wire_entity).unwrap();
+                        *ui_state = UIState::AddingWire {
                             node_entity,
-                            wire_e,
-                            Some(wire_pos.pos.x),
-                            Some(pos.y),
-                        )));
+                            wire_entity,
+                            x_pos: Some(wire_pos.pos.x),
+                            y_pos: Some(pos.y),
+                        };
                     } else {
                         if let Some(i) = first_empty {
                             let wire_entity = entities
@@ -83,13 +79,17 @@ where
                                 .with(Wire::default(), &mut wires)
                                 .build();
                             node.outputs[i] = Some(wire_entity);
-                            *adding_wire =
-                                AddingWire(Some((node_entity, wire_entity, None, Some(pos.y))));
+                            *ui_state = UIState::AddingWire {
+                                node_entity,
+                                wire_entity,
+                                x_pos: None,
+                                y_pos: Some(pos.y),
+                            };
                             break;
                         }
                     }
                 }
             }
-        }
+        };
     }
 }

@@ -25,7 +25,6 @@ where
                 .filter(|wire_opt| wire_opt.is_some())
                 .for_each(|o: &mut Option<Entity>| {
                     let wire_e = o.unwrap();
-                    dbg!(wire_e);
                     if !entities.is_alive(wire_e) {
                         *o = None;
                     }
