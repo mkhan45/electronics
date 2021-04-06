@@ -32,6 +32,9 @@ impl<'a> System<'a> for CurrentModeSys {
                 current_mode.0 =
                     "Right click a node to set wire output or left click to cancel".to_string();
             }
+            UIState::Deleting => {
+                current_mode.0 = "Click a node or wire focus to delete it".to_string();
+            }
             _ => {
                 *current_mode = CurrentModeText::default();
             }

@@ -166,6 +166,7 @@ async fn main() {
 
             ui_signals.iter().for_each(|signal| match signal {
                 UiSignal::AddNode(ty) => world.insert(resources::UIState::AddingNode(*ty)),
+                UiSignal::Delete => world.insert(resources::UIState::Deleting),
             });
             world.insert(resources::UiSignals(Vec::new()));
         }

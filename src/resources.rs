@@ -18,6 +18,7 @@ pub enum UIState {
         x_pos: Option<f32>,
         y_pos: Option<f32>,
     },
+    Deleting,
     Nothing,
 }
 
@@ -30,6 +31,7 @@ impl Default for UIState {
 #[derive(Clone)]
 pub enum UiSignal {
     AddNode(NodeTy),
+    Delete,
 }
 
 #[derive(Default)]

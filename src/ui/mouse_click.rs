@@ -45,6 +45,26 @@ pub fn handle_mouse_click(world: &mut World) {
 
             world.insert(UIState::Nothing);
         }
+        UIState::Deleting => {
+            let positions = world.read_storage::<Pos>();
+            let entities = world.entities();
+            let mouse_pos = {
+                let (mx, my) = mouse_position();
+                Vec2::new(mx, my)
+            };
+
+            let target = (&positions, &entities)
+                .join()
+                .find(|(pos, _)| (pos.pos - mouse_pos).length() < 35.0);
+
+            if let Some((_, entity)) = target {
+                entities.delete(entity).unwrap();
+                std::mem::drop(positions);
+                std::mem::drop(entities);
+                world.maintain();
+                crate::systems::cleanup_sys::run_cleanup_sys(world);
+            }
+        }
         UIState::Nothing => {}
     }
 }
