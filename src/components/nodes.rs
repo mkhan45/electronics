@@ -38,10 +38,6 @@ impl Node<0, 1> for OnNode {
     fn calculate_state(&self, _: [bool; 0]) -> [bool; 1] {
         [true]
     }
-
-    fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
-    }
 }
 
 #[derive(Default)]
@@ -49,10 +45,6 @@ pub struct OffNode;
 impl Node<0, 1> for OffNode {
     fn calculate_state(&self, _: [bool; 0]) -> [bool; 1] {
         [false]
-    }
-
-    fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
     }
 }
 
@@ -68,7 +60,7 @@ impl Node<1, 1> for NotNode {
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(25.0, 0.0)]
+        [Vec2::new(22.5, 0.0)]
     }
 }
 
@@ -80,11 +72,11 @@ impl Node<2, 1> for AndNode {
     }
 
     fn input_offsets() -> [Vec2; 2] {
-        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+        [Vec2::new(-35.0, -20.0), Vec2::new(-35.0, 20.0)]
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 
@@ -96,11 +88,11 @@ impl Node<2, 1> for OrNode {
     }
 
     fn input_offsets() -> [Vec2; 2] {
-        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+        [Vec2::new(-35.0, -20.0), Vec2::new(-35.0, 20.0)]
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 
@@ -112,11 +104,11 @@ impl Node<2, 1> for NandNode {
     }
 
     fn input_offsets() -> [Vec2; 2] {
-        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+        [Vec2::new(-35.0, -20.0), Vec2::new(-35.0, 20.0)]
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 
@@ -128,11 +120,11 @@ impl Node<2, 1> for NorNode {
     }
 
     fn input_offsets() -> [Vec2; 2] {
-        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+        [Vec2::new(-35.0, -20.0), Vec2::new(-35.0, 20.0)]
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 
@@ -144,11 +136,11 @@ impl Node<2, 1> for XorNode {
     }
 
     fn input_offsets() -> [Vec2; 2] {
-        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+        [Vec2::new(-35.0, -20.0), Vec2::new(-35.0, 20.0)]
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 
@@ -160,11 +152,11 @@ impl Node<2, 1> for XnorNode {
     }
 
     fn input_offsets() -> [Vec2; 2] {
-        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+        [Vec2::new(-35.0, -20.0), Vec2::new(-35.0, 20.0)]
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 
@@ -179,7 +171,7 @@ impl Node<0, 1> for SwitchNode {
     }
 
     fn output_offsets() -> [Vec2; 1] {
-        [Vec2::new(30.0, 0.0)]
+        [Vec2::new(35.0, 0.0)]
     }
 }
 

@@ -25,7 +25,6 @@ where
 {
     node: PhantomData<N>,
     draw_fn: Arc<dyn Fn(&N, Pos, &Textures)>,
-    input_offsets: [Vec2; I],
 }
 
 impl<'a, N, const I: usize, const O: usize> System<'a> for DrawNodeSys<N, I, O>
@@ -45,6 +44,9 @@ where
         &mut self,
         (positions, nodes, connections, wires, tick_progress, textures): Self::SystemData,
     ) {
+        let input_offsets = N::input_offsets();
+        let output_offsets = N::output_offsets();
+
         (&positions, &nodes).join().for_each(|(self_pos, node)| {
             let pos = self_pos.pos;
             node.inputs
@@ -56,7 +58,7 @@ where
                         let wire = wires.get(e).unwrap();
 
                         let sp = *wire_pos;
-                        let ep = Vec2::new(pos.x, pos.y) + self.input_offsets[i];
+                        let ep = Vec2::new(pos.x, pos.y) + input_offsets[i];
 
                         if wire.output_state != wire.input_state {
                             let delta = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
@@ -284,9 +286,22 @@ impl<'a> System<'a> for DrawConnectionSys {
     type SystemData = (ReadStorage<'a, Connection>, ReadStorage<'a, Pos>);
 
     fn run(&mut self, (connections, positions): Self::SystemData) {
+        let mouse_pos = {
+            let (mx, my) = mouse_position();
+            Vec2::new(mx, my)
+        };
+
+        let color = |pos: Vec2| {
+            if (pos - mouse_pos).length() > 10.0 {
+                Color::from_rgba(180, 180, 180, 215)
+            } else {
+                DARKGRAY
+            }
+        };
+
         (&connections, &positions)
             .join()
-            .for_each(|(_, Pos { pos, .. })| draw_circle(pos.x, pos.y, 10.0, LIGHTGRAY));
+            .for_each(|(_, Pos { pos, .. })| draw_circle(pos.x, pos.y, 10.0, color(*pos)));
     }
 }
 
@@ -372,14 +387,12 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
             draw_fn: Arc::new(|_, Pos { pos, .. }, _| {
                 draw_circle(pos.x, pos.y, 25.0, RED);
             }),
-            input_offsets: [],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OffNode>,
             draw_fn: Arc::new(|_, Pos { pos, .. }, _| {
                 draw_circle(pos.x, pos.y, 25.0, WHITE);
             }),
-            input_offsets: [],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NotNode>,
@@ -398,7 +411,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, 0.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<AndNode>,
@@ -417,7 +429,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<OrNode>,
@@ -436,7 +447,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NandNode>,
@@ -455,7 +465,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<NorNode>,
@@ -474,7 +483,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-25.0, -15.0), Vec2::new(-25.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<XorNode>,
@@ -493,7 +501,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-26.0, -15.0), Vec2::new(-26.0, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<XnorNode>,
@@ -512,14 +519,12 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                     },
                 );
             }),
-            input_offsets: [Vec2::new(-26.5, -15.0), Vec2::new(-26.5, 15.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<Wire>,
             draw_fn: Arc::new(|_, Pos { pos, .. }, _: &Textures| {
                 draw_circle(pos.x, pos.y, 10.0, WHITE);
             }),
-            input_offsets: [Vec2::new(0.0, 0.0)],
         })
         .with_thread_local(DrawNodeSys {
             node: PhantomData::<SwitchNode>,
@@ -529,7 +534,6 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
                 draw_circle(pos.x, pos.y, 25.0, color);
                 draw_circle_lines(pos.x, pos.y, 25.0, 2.5, BLACK);
             }),
-            input_offsets: [],
         })
         .with_thread_local(DrawConnectionSys)
 }
