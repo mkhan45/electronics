@@ -1,6 +1,5 @@
 use crate::nodes::Wire;
 use crate::resources::UiSignal;
-use egui_macroquad;
 use macroquad::prelude::*;
 use specs::prelude::*;
 

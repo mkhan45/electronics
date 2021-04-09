@@ -45,7 +45,6 @@ where
         (positions, nodes, connections, wires, tick_progress, textures): Self::SystemData,
     ) {
         let input_offsets = N::input_offsets();
-        let output_offsets = N::output_offsets();
 
         (&positions, &nodes).join().for_each(|(self_pos, node)| {
             let pos = self_pos.pos;

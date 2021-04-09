@@ -1,7 +1,5 @@
 use macroquad::miniquad::graphics::Context;
 use macroquad::texture::Texture2D;
-use resvg;
-use usvg;
 
 pub async fn texture_from_file(
     filename: &str,
