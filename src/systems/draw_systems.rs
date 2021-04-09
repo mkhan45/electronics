@@ -1,4 +1,3 @@
-use crate::nodes::SwitchNode;
 use crate::Pos;
 use crate::Wire;
 use crate::{components::nodes::NandNode, nodes::NotNode};
@@ -9,6 +8,7 @@ use crate::{
     resources::TickProgress,
     resources::UIState,
 };
+use crate::{components::Connection, nodes::SwitchNode};
 use crate::{
     components::{nodes::AndNode, Node},
     resources::Textures,
@@ -35,130 +35,141 @@ where
     type SystemData = (
         ReadStorage<'a, Pos>,
         ReadStorage<'a, Connected<N, I, O>>,
+        ReadStorage<'a, Connection>,
         ReadStorage<'a, Wire>,
         Read<'a, TickProgress>,
         Read<'a, Textures>,
     );
 
-    fn run(&mut self, (positions, nodes, wires, tick_progress, textures): Self::SystemData) {
+    fn run(
+        &mut self,
+        (positions, nodes, connections, wires, tick_progress, textures): Self::SystemData,
+    ) {
         (&positions, &nodes).join().for_each(|(self_pos, node)| {
             let pos = self_pos.pos;
             node.inputs
                 .iter()
                 .enumerate()
-                .filter_map(|(i, o)| o.map(|e| (i, e)))
+                .filter_map(|(i, c)| connections.get(*c).unwrap().wire.map(|w| (i, w)))
                 .for_each(|(i, e)| {
-                    let Pos { pos: wire_pos, .. } = positions.get(e).unwrap();
-                    let wire = wires.get(e).unwrap();
+                    if let Some(Pos { pos: wire_pos, .. }) = positions.get(e) {
+                        let wire = wires.get(e).unwrap();
 
-                    let sp = *wire_pos;
-                    let ep = Vec2::new(pos.x, pos.y) + self.input_offsets[i];
+                        let sp = *wire_pos;
+                        let ep = Vec2::new(pos.x, pos.y) + self.input_offsets[i];
 
-                    if wire.output_state != wire.input_state {
-                        let delta = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
+                        if wire.output_state != wire.input_state {
+                            let delta = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
 
-                        let horizontal_dist = ep.x - sp.x;
-                        let vert_dist = ep.y - sp.y;
-                        let total_dist = horizontal_dist.abs() + vert_dist.abs();
-                        let red_dist = delta * total_dist;
+                            let horizontal_dist = ep.x - sp.x;
+                            let vert_dist = ep.y - sp.y;
+                            let total_dist = horizontal_dist.abs() + vert_dist.abs();
+                            let red_dist = delta * total_dist;
 
-                        // vertical
-                        {
-                            let midpoint = if red_dist < vert_dist.abs() {
-                                sp.y + vert_dist.signum() * red_dist
-                            } else {
-                                sp.y + vert_dist
-                            };
+                            // vertical
+                            {
+                                let midpoint = if red_dist < vert_dist.abs() {
+                                    sp.y + vert_dist.signum() * red_dist
+                                } else {
+                                    sp.y + vert_dist
+                                };
 
+                                draw_line(
+                                    sp.x,
+                                    sp.y,
+                                    sp.x,
+                                    midpoint,
+                                    5.0,
+                                    if wire.input_state { RED } else { WHITE },
+                                );
+
+                                if vert_dist.abs() > red_dist {
+                                    draw_line(
+                                        sp.x,
+                                        midpoint,
+                                        sp.x,
+                                        ep.y,
+                                        5.0,
+                                        if wire.input_state { WHITE } else { RED },
+                                    )
+                                }
+                            }
+
+                            // horizontal
+                            {
+                                let midpoint = sp.x
+                                    + horizontal_dist.signum()
+                                        * (red_dist - vert_dist.abs()).max(0.0);
+
+                                draw_line(
+                                    sp.x,
+                                    ep.y,
+                                    midpoint,
+                                    ep.y,
+                                    5.0,
+                                    if wire.input_state { RED } else { WHITE },
+                                );
+
+                                draw_line(
+                                    midpoint,
+                                    ep.y,
+                                    ep.x,
+                                    ep.y,
+                                    5.0,
+                                    if wire.input_state { WHITE } else { RED },
+                                );
+
+                                let (new_col, old_col) = if wire.input_state {
+                                    (RED, WHITE)
+                                } else {
+                                    (WHITE, RED)
+                                };
+
+                                draw_circle(
+                                    sp.x,
+                                    ep.y,
+                                    5.0,
+                                    if delta >= vert_dist.abs() / total_dist {
+                                        new_col
+                                    } else {
+                                        old_col
+                                    },
+                                );
+                            }
+                        } else {
+                            // vertical
                             draw_line(
                                 sp.x,
                                 sp.y,
                                 sp.x,
-                                midpoint,
+                                ep.y,
                                 5.0,
                                 if wire.input_state { RED } else { WHITE },
                             );
 
-                            if vert_dist.abs() > red_dist {
-                                draw_line(
-                                    sp.x,
-                                    midpoint,
-                                    sp.x,
-                                    ep.y,
-                                    5.0,
-                                    if wire.input_state { WHITE } else { RED },
-                                )
-                            }
-                        }
-
-                        // horizontal
-                        {
-                            let midpoint = sp.x
-                                + horizontal_dist.signum() * (red_dist - vert_dist.abs()).max(0.0);
-
+                            // horizontal
                             draw_line(
                                 sp.x,
-                                ep.y,
-                                midpoint,
-                                ep.y,
-                                5.0,
-                                if wire.input_state { RED } else { WHITE },
-                            );
-
-                            draw_line(
-                                midpoint,
                                 ep.y,
                                 ep.x,
                                 ep.y,
                                 5.0,
-                                if wire.input_state { WHITE } else { RED },
+                                if wire.input_state { RED } else { WHITE },
                             );
-
-                            let (new_col, old_col) = if wire.input_state {
-                                (RED, WHITE)
-                            } else {
-                                (WHITE, RED)
-                            };
 
                             draw_circle(
                                 sp.x,
                                 ep.y,
                                 5.0,
-                                if delta >= vert_dist.abs() / total_dist {
-                                    new_col
-                                } else {
-                                    old_col
-                                },
+                                if wire.input_state { RED } else { WHITE },
                             );
                         }
-                    } else {
-                        // vertical
-                        draw_line(
-                            sp.x,
-                            sp.y,
-                            sp.x,
-                            ep.y,
-                            5.0,
-                            if wire.input_state { RED } else { WHITE },
-                        );
-
-                        // horizontal
-                        draw_line(
-                            sp.x,
-                            ep.y,
-                            ep.x,
-                            ep.y,
-                            5.0,
-                            if wire.input_state { RED } else { WHITE },
-                        );
-
-                        draw_circle(sp.x, ep.y, 5.0, if wire.input_state { RED } else { WHITE });
                     }
                 });
 
             node.outputs
                 .iter()
-                .filter_map(|o| o.as_ref())
+                .filter_map(|c| connections.get(*c).unwrap().wire.as_ref())
                 .for_each(|e| {
                     if let Some(Pos { pos: wire_pos, .. }) = positions.get(*e) {
                         let wire = wires.get(*e).unwrap();
@@ -236,7 +247,7 @@ impl<'a> System<'a> for TempWireDrawSys {
         let color = LIGHTGRAY;
         match *ui_state {
             UIState::AddingWire {
-                node_entity: e,
+                connection_entity: e,
                 x_pos: None,
                 y_pos: Some(_),
                 ..
@@ -265,6 +276,17 @@ impl<'a> System<'a> for TempWireDrawSys {
             }
             _ => {}
         }
+    }
+}
+
+pub struct DrawConnectionSys;
+impl<'a> System<'a> for DrawConnectionSys {
+    type SystemData = (ReadStorage<'a, Connection>, ReadStorage<'a, Pos>);
+
+    fn run(&mut self, (connections, positions): Self::SystemData) {
+        (&connections, &positions)
+            .join()
+            .for_each(|(_, Pos { pos, .. })| draw_circle(pos.x, pos.y, 10.0, LIGHTGRAY));
     }
 }
 
@@ -509,4 +531,5 @@ pub fn add_draw_system<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatcher
             }),
             input_offsets: [],
         })
+        .with_thread_local(DrawConnectionSys)
 }

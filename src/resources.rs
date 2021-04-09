@@ -13,7 +13,7 @@ pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 pub enum UIState {
     AddingNode(NodeTy),
     AddingWire {
-        node_entity: Entity,
+        connection_entity: Entity,
         wire_entity: Entity,
         x_pos: Option<f32>,
         y_pos: Option<f32>,

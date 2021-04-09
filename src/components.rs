@@ -5,6 +5,12 @@ pub mod nodes;
 
 pub trait Node<const I: usize, const O: usize>: Default {
     fn calculate_state(&self, inputs: [bool; I]) -> [bool; O];
+    fn input_offsets() -> [Vec2; I] {
+        [Vec2::new(0.0, 0.0); I]
+    }
+    fn output_offsets() -> [Vec2; O] {
+        [Vec2::new(0.0, 0.0); O]
+    }
 }
 
 #[derive(Component)]
@@ -13,8 +19,8 @@ where
     N: Node<I, O> + 'static,
 {
     pub node: N,
-    pub inputs: [Option<Entity>; I],
-    pub outputs: [Option<Entity>; O],
+    pub inputs: [Entity; I],
+    pub outputs: [Entity; O],
 }
 
 impl<N, const I: usize, const O: usize> Connected<N, I, O>
@@ -23,19 +29,6 @@ where
 {
     pub fn calculate_state(&self, inputs: [bool; I]) -> [bool; O] {
         self.node.calculate_state(inputs)
-    }
-}
-
-impl<N, const I: usize, const O: usize> Default for Connected<N, I, O>
-where
-    N: Node<I, O> + 'static,
-{
-    fn default() -> Self {
-        Connected {
-            node: N::default(),
-            inputs: [None; I],
-            outputs: [None; O],
-        }
     }
 }
 
@@ -67,4 +60,24 @@ impl Pos {
             pos,
         }
     }
+
+    pub fn from_vec_unrounded(pos: Vec2) -> Self {
+        Pos {
+            orientation: Orientation::Right,
+            pos,
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum ConnectionTy {
+    Input,
+    Output,
+}
+
+#[derive(Copy, Clone, Component)]
+pub struct Connection {
+    pub wire: Option<Entity>,
+    pub ty: ConnectionTy,
+    pub index: usize,
 }

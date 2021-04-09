@@ -1,6 +1,7 @@
 use super::Node;
 use crate::systems::simulation_systems::ElectroSys;
 use crate::systems::simulation_systems::WireSys;
+use macroquad::prelude::Vec2;
 use specs::{prelude::*, Component};
 
 #[derive(Component, Default)]
@@ -37,6 +38,10 @@ impl Node<0, 1> for OnNode {
     fn calculate_state(&self, _: [bool; 0]) -> [bool; 1] {
         [true]
     }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
+    }
 }
 
 #[derive(Default)]
@@ -44,6 +49,10 @@ pub struct OffNode;
 impl Node<0, 1> for OffNode {
     fn calculate_state(&self, _: [bool; 0]) -> [bool; 1] {
         [false]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
     }
 }
 
@@ -53,6 +62,14 @@ impl Node<1, 1> for NotNode {
     fn calculate_state(&self, input: [bool; 1]) -> [bool; 1] {
         [!input[0]]
     }
+
+    fn input_offsets() -> [Vec2; 1] {
+        [Vec2::new(-30.0, 0.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(25.0, 0.0)]
+    }
 }
 
 #[derive(Default)]
@@ -60,6 +77,14 @@ pub struct AndNode;
 impl Node<2, 1> for AndNode {
     fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [input[0] && input[1]]
+    }
+
+    fn input_offsets() -> [Vec2; 2] {
+        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
     }
 }
 
@@ -69,6 +94,14 @@ impl Node<2, 1> for OrNode {
     fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [input[0] || input[1]]
     }
+
+    fn input_offsets() -> [Vec2; 2] {
+        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
+    }
 }
 
 #[derive(Default)]
@@ -76,6 +109,14 @@ pub struct NandNode;
 impl Node<2, 1> for NandNode {
     fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [!(input[0] && input[1])]
+    }
+
+    fn input_offsets() -> [Vec2; 2] {
+        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
     }
 }
 
@@ -85,6 +126,14 @@ impl Node<2, 1> for NorNode {
     fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [!(input[0] || input[1])]
     }
+
+    fn input_offsets() -> [Vec2; 2] {
+        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
+    }
 }
 
 #[derive(Default)]
@@ -93,6 +142,14 @@ impl Node<2, 1> for XorNode {
     fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [input[0] ^ input[1]]
     }
+
+    fn input_offsets() -> [Vec2; 2] {
+        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
+    }
 }
 
 #[derive(Default)]
@@ -100,6 +157,14 @@ pub struct XnorNode;
 impl Node<2, 1> for XnorNode {
     fn calculate_state(&self, input: [bool; 2]) -> [bool; 1] {
         [!(input[0] ^ input[1])]
+    }
+
+    fn input_offsets() -> [Vec2; 2] {
+        [Vec2::new(-30.0, -20.0), Vec2::new(-30.0, 20.0)]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
     }
 }
 
@@ -111,6 +176,10 @@ pub struct SwitchNode {
 impl Node<0, 1> for SwitchNode {
     fn calculate_state(&self, _input: [bool; 0]) -> [bool; 1] {
         [self.state]
+    }
+
+    fn output_offsets() -> [Vec2; 1] {
+        [Vec2::new(30.0, 0.0)]
     }
 }
 

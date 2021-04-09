@@ -1,47 +1,65 @@
-use crate::Connected;
 use std::marker::PhantomData;
 
+use crate::components::nodes::*;
 use crate::components::Node;
+use crate::{components::Connection, Connected};
 use specs::prelude::*;
 
 #[derive(Default)]
-pub struct CleanupWires<N, const I: usize, const O: usize>
-where
-    N: Node<I, O> + 'static,
-{
-    node: PhantomData<N>,
-}
-impl<'a, N, const I: usize, const O: usize> System<'a> for CleanupWires<N, I, O>
-where
-    N: Node<I, O> + 'static,
-{
-    type SystemData = (WriteStorage<'a, Connected<N, I, O>>, Entities<'a>);
+pub struct CleanupWires;
+impl<'a> System<'a> for CleanupWires {
+    type SystemData = (WriteStorage<'a, Connection>, Entities<'a>);
 
-    fn run(&mut self, (mut nodes, entities): Self::SystemData) {
-        (&mut nodes).join().for_each(|node| {
-            node.inputs
-                .iter_mut()
-                .chain(node.outputs.iter_mut())
-                .filter(|wire_opt| wire_opt.is_some())
-                .for_each(|o: &mut Option<Entity>| {
-                    let wire_e = o.unwrap();
-                    if !entities.is_alive(wire_e) {
-                        *o = None;
-                    }
-                });
+    fn run(&mut self, (mut connections, entities): Self::SystemData) {
+        (&mut connections).join().for_each(|connection| {
+            if let Some(wire_e) = connection.wire {
+                if !entities.is_alive(wire_e) {
+                    connection.wire = None;
+                }
+            }
         });
     }
 }
 
-pub fn run_cleanup_sys(world: &mut World) {
-    use crate::nodes::*;
+pub struct CleanupConnectionSys<N, const I: usize, const O: usize>
+where
+    N: Node<I, O> + 'static,
+{
+    node: PhantomData<N>,
+    entity: Entity,
+}
 
-    macro_rules! cleanup_nodes {
-        ( $([$node:ident, $i:expr, $o:expr]),*, $(,)? ) => {
-            $(CleanupWires::<$node, $i, $o>::default().run_now(world);)*
+impl<'a, N, const I: usize, const O: usize> System<'a> for CleanupConnectionSys<N, I, O>
+where
+    N: Node<I, O> + 'static,
+{
+    type SystemData = (ReadStorage<'a, Connected<N, I, O>>, Entities<'a>);
+
+    fn run(&mut self, (nodes, entities): Self::SystemData) {
+        if let Some(node) = nodes.get(self.entity) {
+            node.inputs
+                .iter()
+                .for_each(|connection| entities.delete(*connection).unwrap());
+            node.outputs
+                .iter()
+                .for_each(|connection| entities.delete(*connection).unwrap());
+        }
+    }
+}
+
+pub fn run_cleanup_systems(entity: Entity, world: &World) {
+    use crate::all_nodes;
+
+    macro_rules! run_cleanup_sys {
+        ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
+            $(
+                CleanupConnectionSys {
+                    node: PhantomData::<$node>,
+                    entity,
+                }.run_now(world);
+            )*
         };
     }
 
-    use crate::all_nodes;
-    all_nodes!(cleanup_nodes);
+    all_nodes!(run_cleanup_sys);
 }

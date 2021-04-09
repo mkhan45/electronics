@@ -1,7 +1,7 @@
-use crate::components::Pos;
+use crate::components::Connection;
+use crate::components::{round_to_snap, Pos};
 use crate::resources::UIState;
 use crate::systems::place_node_sys::PlaceNodeSys;
-use crate::systems::place_wire_sys::WirePlaceSys;
 use macroquad::prelude::*;
 use specs::prelude::*;
 
@@ -22,7 +22,7 @@ pub fn handle_mouse_click(world: &mut World) {
             if !wire_placed {
                 world.delete_entity(wire_entity).unwrap();
 
-                crate::systems::cleanup_sys::run_cleanup_sys(world);
+                crate::systems::cleanup_sys::CleanupWires.run_now(world);
             }
 
             world.insert(UIState::Nothing);
@@ -53,16 +53,19 @@ pub fn handle_mouse_click(world: &mut World) {
                 Vec2::new(mx, my)
             };
 
-            let target = (&positions, &entities)
-                .join()
-                .find(|(pos, _)| (pos.pos - mouse_pos).length() < 35.0);
+            let connections = world.read_storage::<Connection>();
+            let target = (&positions, &entities).join().find(|(pos, e)| {
+                (connections.get(*e).is_none()) && (pos.pos - mouse_pos).length() < 35.0
+            });
+            std::mem::drop(connections);
 
             if let Some((_, entity)) = target {
                 entities.delete(entity).unwrap();
                 std::mem::drop(positions);
                 std::mem::drop(entities);
+                crate::systems::cleanup_sys::run_cleanup_systems(entity, world);
                 world.maintain();
-                crate::systems::cleanup_sys::run_cleanup_sys(world);
+                crate::systems::cleanup_sys::CleanupWires.run_now(world);
             }
         }
         UIState::Nothing => {}
@@ -74,40 +77,28 @@ pub fn handle_mouse_right_click(world: &mut World) {
 
     match ui_state {
         UIState::AddingWire {
-            node_entity,
+            connection_entity,
             wire_entity,
             x_pos: None,
             y_pos: Some(y_pos),
         } => {
             let (mx, _) = mouse_position();
             world.insert(UIState::AddingWire {
-                node_entity,
+                connection_entity,
                 wire_entity,
                 x_pos: Some(mx),
                 y_pos: Some(y_pos),
             });
             world
                 .write_storage::<Pos>()
-                .insert(wire_entity, Pos::from_vec(Vec2::new(mx, y_pos)))
+                .insert(
+                    wire_entity,
+                    Pos::from_vec(Vec2::new(mx, round_to_snap(y_pos))),
+                )
                 .unwrap();
         }
         _ => {
-            macro_rules! place_wire_systems {
-                ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
-                    let initial_state = matches!(*world.fetch::<UIState>(), UIState::AddingWire{..});
-
-                    $(
-                        WirePlaceSys::<nodes::$node, $i, $o>::default().run_now(&world);
-                        let new_state = matches!(*world.fetch::<UIState>(), UIState::AddingWire{..});
-                        if new_state != initial_state {
-                            return
-                        }
-                    )*
-                };
-            }
-
-            use crate::all_nodes;
-            all_nodes!(place_wire_systems);
+            crate::systems::place_wire_sys::WirePlaceSys.run_now(world);
         }
     }
 }
