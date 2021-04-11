@@ -1,10 +1,8 @@
-use crate::nodes::SwitchNode;
 use crate::resources::UIState;
 use crate::Connected;
 use crate::Pos;
+use crate::{nodes::SwitchNode, resources::MousePos};
 use specs::prelude::*;
-
-use macroquad::prelude::*;
 
 use crate::resources::CurrentModeText;
 
@@ -46,14 +44,12 @@ pub struct SwitchClickSys;
 impl<'a> System<'a> for SwitchClickSys {
     type SystemData = (
         WriteStorage<'a, Connected<SwitchNode, 0, 1>>,
+        Read<'a, MousePos>,
         ReadStorage<'a, Pos>,
     );
 
-    fn run(&mut self, (mut switches, positions): Self::SystemData) {
-        let mouse_pos = {
-            let (mx, my) = mouse_position();
-            Vec2::new(mx, my)
-        };
+    fn run(&mut self, (mut switches, mouse_pos, positions): Self::SystemData) {
+        let mouse_pos = mouse_pos.0;
 
         let target_switch = (&mut switches, &positions)
             .join()

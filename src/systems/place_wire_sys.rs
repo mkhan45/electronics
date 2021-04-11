@@ -1,8 +1,7 @@
-use crate::components::Pos;
 use crate::components::{Connection, ConnectionTy};
 use crate::resources::UIState;
 use crate::Wire;
-use macroquad::prelude::*;
+use crate::{components::Pos, resources::MousePos};
 use specs::prelude::*;
 
 pub struct WirePlaceSys;
@@ -12,15 +11,15 @@ impl<'a> System<'a> for WirePlaceSys {
         WriteStorage<'a, Wire>,
         ReadStorage<'a, Pos>,
         Write<'a, UIState>,
+        Read<'a, MousePos>,
         Entities<'a>,
     );
 
     fn run(
         &mut self,
-        (mut connections, mut wires, positions, mut ui_state, entities): Self::SystemData,
+        (mut connections, mut wires, positions, mut ui_state, mouse_pos, entities): Self::SystemData,
     ) {
-        let (mx, my) = mouse_position();
-        let mp = Vec2::new(mx, my);
+        let mp = mouse_pos.0;
 
         match *ui_state {
             UIState::AddingWire { wire_entity, .. } => {

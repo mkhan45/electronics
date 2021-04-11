@@ -1,5 +1,6 @@
 use crate::components::Connection;
 use crate::components::{round_to_snap, Pos};
+use crate::resources::MousePos;
 use crate::resources::UIState;
 use crate::systems::place_node_sys::PlaceNodeSys;
 use macroquad::prelude::*;
@@ -48,11 +49,7 @@ pub fn handle_mouse_click(world: &mut World) {
         UIState::Deleting => {
             let positions = world.read_storage::<Pos>();
             let entities = world.entities();
-            let mouse_pos = {
-                let (mx, my) = mouse_position();
-                Vec2::new(mx, my)
-            };
-
+            let mouse_pos = world.fetch::<MousePos>().0;
             let connections = world.read_storage::<Connection>();
             let target = (&positions, &entities).join().find(|(pos, e)| {
                 (connections.get(*e).is_none()) && (pos.pos - mouse_pos).length() < 35.0
@@ -82,18 +79,18 @@ pub fn handle_mouse_right_click(world: &mut World) {
             x_pos: None,
             y_pos: Some(y_pos),
         } => {
-            let (mx, _) = mouse_position();
+            let mouse_pos = world.fetch::<MousePos>().0;
             world.insert(UIState::AddingWire {
                 connection_entity,
                 wire_entity,
-                x_pos: Some(mx),
+                x_pos: Some(mouse_pos.x),
                 y_pos: Some(y_pos),
             });
             world
                 .write_storage::<Pos>()
                 .insert(
                     wire_entity,
-                    Pos::from_vec(Vec2::new(mx, round_to_snap(y_pos))),
+                    Pos::from_vec(Vec2::new(mouse_pos.x, round_to_snap(y_pos))),
                 )
                 .unwrap();
         }

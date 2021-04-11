@@ -1,4 +1,7 @@
+use macroquad::prelude::screen_height;
+use macroquad::prelude::Vec2;
 use macroquad::texture::Texture2D;
+use macroquad::{camera::Camera2D, prelude::screen_width};
 use specs::Entity;
 
 use crate::components::nodes::NodeTy;
@@ -72,3 +75,20 @@ impl Default for CurrentModeText {
         )
     }
 }
+
+pub struct CameraRes(pub Camera2D);
+
+impl Default for CameraRes {
+    fn default() -> Self {
+        CameraRes(Camera2D {
+            rotation: 0.0,
+            zoom: Vec2::new(2.0 / screen_width(), 2.0 / screen_height()),
+            target: Vec2::new(0.0, 0.0),
+            offset: Vec2::new(0.0, 0.0),
+            render_target: None,
+        })
+    }
+}
+
+#[derive(Default)]
+pub struct MousePos(pub Vec2);

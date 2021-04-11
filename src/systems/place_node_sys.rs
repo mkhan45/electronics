@@ -1,8 +1,7 @@
 use crate::components::{Connection, ConnectionTy, Node};
-use crate::Connected;
 use crate::Pos;
+use crate::{resources::MousePos, Connected};
 use core::marker::PhantomData;
-use macroquad::prelude::*;
 use specs::prelude::*;
 use std::convert::TryInto;
 
@@ -22,15 +21,15 @@ where
         WriteStorage<'a, Connected<N, I, O>>,
         WriteStorage<'a, Pos>,
         WriteStorage<'a, Connection>,
+        Read<'a, MousePos>,
         Entities<'a>,
     );
 
     fn run(
         &mut self,
-        (mut node_storage, mut position_storage, mut connections, entities): Self::SystemData,
+        (mut node_storage, mut position_storage, mut connections, mouse_pos, entities): Self::SystemData,
     ) {
-        let mp = mouse_position();
-        let pos = Pos::from_vec(mp.into());
+        let pos = Pos::from_vec(mouse_pos.0);
         let input_offsets = N::input_offsets();
         let output_offsets = N::output_offsets();
 

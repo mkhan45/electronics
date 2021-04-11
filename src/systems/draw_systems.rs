@@ -1,5 +1,4 @@
-use crate::Pos;
-use crate::Wire;
+use crate::components::round_to_snap;
 use crate::{components::nodes::NandNode, nodes::NotNode};
 use crate::{components::nodes::NorNode, nodes::OnNode};
 use crate::{components::nodes::XnorNode, nodes::XorNode};
@@ -13,7 +12,9 @@ use crate::{
     components::{nodes::AndNode, Node},
     resources::Textures,
 };
+use crate::{resources::CameraRes, Wire};
 use crate::{resources::GridMode, Connected};
+use crate::{resources::MousePos, Pos};
 use core::marker::PhantomData;
 use macroquad::prelude::*;
 use specs::prelude::*;
@@ -241,11 +242,12 @@ where
 
 pub struct TempWireDrawSys;
 impl<'a> System<'a> for TempWireDrawSys {
-    type SystemData = (Read<'a, UIState>, ReadStorage<'a, Pos>);
+    type SystemData = (Read<'a, UIState>, ReadStorage<'a, Pos>, Read<'a, MousePos>);
 
-    fn run(&mut self, (ui_state, position_storage): Self::SystemData) {
+    fn run(&mut self, (ui_state, position_storage, mouse_pos): Self::SystemData) {
         use crate::components::round_to_snap as snap;
         let color = LIGHTGRAY;
+        let mouse_pos = mouse_pos.0;
         match *ui_state {
             UIState::AddingWire {
                 connection_entity: e,
@@ -258,7 +260,7 @@ impl<'a> System<'a> for TempWireDrawSys {
                 draw_line(
                     start_pos.x,
                     start_pos.y,
-                    snap(mouse_position().0),
+                    snap(mouse_pos.x),
                     start_pos.y,
                     5.0,
                     color,
@@ -269,8 +271,7 @@ impl<'a> System<'a> for TempWireDrawSys {
                 y_pos: Some(y_pos),
                 ..
             } => {
-                let (mx, my) = mouse_position();
-                let pos = Pos::from_vec(Vec2::new(mx, my)).pos;
+                let pos = Pos::from_vec(mouse_pos).pos;
 
                 draw_line(snap(x_pos), snap(y_pos), snap(x_pos), pos.y, 5.0, color);
                 draw_line(snap(x_pos), pos.y, pos.x, pos.y, 5.0, color);
@@ -282,13 +283,14 @@ impl<'a> System<'a> for TempWireDrawSys {
 
 pub struct DrawConnectionSys;
 impl<'a> System<'a> for DrawConnectionSys {
-    type SystemData = (ReadStorage<'a, Connection>, ReadStorage<'a, Pos>);
+    type SystemData = (
+        ReadStorage<'a, Connection>,
+        ReadStorage<'a, Pos>,
+        Read<'a, MousePos>,
+    );
 
-    fn run(&mut self, (connections, positions): Self::SystemData) {
-        let mouse_pos = {
-            let (mx, my) = mouse_position();
-            Vec2::new(mx, my)
-        };
+    fn run(&mut self, (connections, positions, mouse_pos): Self::SystemData) {
+        let mouse_pos = mouse_pos.0;
 
         let color = |pos: Vec2| {
             if (pos - mouse_pos).length() > 10.0 {
@@ -306,11 +308,39 @@ impl<'a> System<'a> for DrawConnectionSys {
 
 pub struct DrawGridSys;
 impl<'a> System<'a> for DrawGridSys {
-    type SystemData = Read<'a, GridMode>;
+    type SystemData = (Read<'a, GridMode>, Read<'a, CameraRes>);
 
-    fn run(&mut self, grid_mode: Self::SystemData) {
+    // TODO: for some reason this only draws in the first quadrant, should be fixed later
+    fn run(&mut self, (grid_mode, camera_res): Self::SystemData) {
         use crate::components::SNAP;
         let s = 4;
+        let camera = camera_res.0;
+
+        let (top, left) = {
+            let top_left = camera.screen_to_world((0.0, 0.0).into());
+            (top_left.y, top_left.x)
+        };
+        let top = top - top.ceil() % SNAP + SNAP;
+        let left = left - left.ceil() % SNAP - SNAP;
+        let sx = s - ((left.floor() / SNAP).abs() as usize % s);
+
+        let (bottom, right) = {
+            let bottom_right = camera.screen_to_world((screen_width(), screen_height()).into());
+            (bottom_right.y, bottom_right.x)
+        };
+        let bottom = bottom - bottom.ceil() % SNAP - SNAP;
+        let right = right - right.ceil() % SNAP + SNAP;
+
+        // idk why they're switched but they are
+        let (bottom, top) = (top, bottom);
+        let sy = s - ((top.floor() / SNAP).abs() as usize % s);
+
+        let x_positions = (0..((right - left) / SNAP).ceil() as usize + s + 1)
+            .map(|i| (i, i % s == 0))
+            .map(|(i, is_big)| (left + i as f32 * SNAP - sx as f32 * SNAP - SNAP, is_big));
+        let y_positions = (0..((bottom - top) / SNAP).ceil() as usize + s + 1)
+            .map(|i| (i, i % s == 0))
+            .map(|(i, is_big)| (top + i as f32 * SNAP - sy as f32 * SNAP, is_big));
 
         match *grid_mode {
             GridMode::Lines => {
@@ -318,26 +348,24 @@ impl<'a> System<'a> for DrawGridSys {
                 let base_width = 0.5;
                 let wider_width = 1.5;
 
-                (0..(screen_width() / SNAP).ceil() as usize)
-                    .map(|i| (i, if i % s == 0 { wider_width } else { base_width }))
-                    .map(|(i, width)| (i as f32 * SNAP, width))
-                    .for_each(|(x, width)| draw_line(x, 0.0, x, screen_height(), width, DARKGRAY));
+                let thickness = |is_big| {
+                    if is_big {
+                        wider_width
+                    } else {
+                        base_width
+                    }
+                };
 
-                (0..(screen_height() / SNAP).ceil() as usize)
-                    .map(|i| (i, if i % s == 0 { wider_width } else { base_width }))
-                    .map(|(i, width)| (i as f32 * SNAP, width))
-                    .for_each(|(y, width)| draw_line(0.0, y, screen_width(), y, width, DARKGRAY));
+                x_positions.for_each(|(x, is_big)| {
+                    draw_line(x, top, x, bottom, thickness(is_big), DARKGRAY)
+                });
+                y_positions.for_each(|(y, is_big)| {
+                    draw_line(left, y, right, y, thickness(is_big), DARKGRAY)
+                });
             }
             GridMode::Dots => {
                 let base_rad = 1.5;
                 let wider_rad = 3.0;
-
-                let x_positions = (0..(screen_width() / SNAP).ceil() as usize)
-                    .map(|i| (i, i % s == 0))
-                    .map(|(i, is_big)| (i as f32 * SNAP, is_big));
-                let y_positions = (0..(screen_height() / SNAP).ceil() as usize)
-                    .map(|i| (i, i % s == 0))
-                    .map(|(i, is_big)| (i as f32 * SNAP, is_big));
 
                 for (x, b1) in x_positions {
                     for (y, b2) in y_positions.clone() {
@@ -352,13 +380,6 @@ impl<'a> System<'a> for DrawGridSys {
                 let wider_thickness = 1.25;
                 let wider_length = 15.0;
 
-                let x_positions = (0..(screen_width() / SNAP).ceil() as usize)
-                    .map(|i| (i, i % s == 0))
-                    .map(|(i, is_big)| (i as f32 * SNAP, is_big));
-                let y_positions = (0..(screen_height() / SNAP).ceil() as usize)
-                    .map(|i| (i, i % s == 0))
-                    .map(|(i, is_big)| (i as f32 * SNAP, is_big));
-
                 for (x, b1) in x_positions {
                     for (y, b2) in y_positions.clone() {
                         let (thickness, len) = if b1 && b2 {
@@ -368,6 +389,7 @@ impl<'a> System<'a> for DrawGridSys {
                         };
 
                         draw_line(x - len / 2.0, y, x + len / 2.0, y, thickness, DARKGRAY);
+
                         draw_line(x, y - len / 2.0, x, y + len / 2.0, thickness, DARKGRAY);
                     }
                 }

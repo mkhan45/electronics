@@ -1,6 +1,7 @@
 use crate::nodes::Wire;
 use crate::resources::UiSignal;
 use macroquad::prelude::*;
+use resources::CameraRes;
 use specs::prelude::*;
 
 mod components;
@@ -67,6 +68,12 @@ async fn main() {
 
     world.insert(resources::Tick(0));
     world.insert(resources::TickFrames(60));
+    world.insert(resources::CameraRes::default());
+
+    let mut prev_mouse_pos = {
+        let (mx, my) = mouse_position();
+        Vec2::new(mx, my)
+    };
 
     let mut last_fps = [60i32; 256];
 
@@ -115,6 +122,13 @@ async fn main() {
             });
         });
 
+        {
+            let camera = world.fetch::<CameraRes>().0;
+            world.insert(resources::MousePos(
+                camera.screen_to_world(mouse_position().into()),
+            ));
+        }
+
         if is_mouse_button_pressed(MouseButton::Left) {
             ui::mouse_click::handle_mouse_click(&mut world);
         }
@@ -122,6 +136,33 @@ async fn main() {
         if is_mouse_button_pressed(MouseButton::Right) {
             ui::mouse_click::handle_mouse_right_click(&mut world);
         }
+
+        let new_mouse_pos = {
+            let (mx, my) = mouse_position();
+            Vec2::new(mx, -my)
+        };
+
+        if is_mouse_button_down(MouseButton::Middle) {
+            world.fetch_mut::<CameraRes>().0.offset += (new_mouse_pos - prev_mouse_pos) / 1000.0;
+        }
+
+        {
+            let mp: Vec2 = mouse_position().into();
+            let old_camera = world.fetch::<CameraRes>().0;
+            let old_focus = old_camera.screen_to_world(mp);
+
+            let mwheel = macroquad::input::mouse_wheel().1;
+            let zoom_fac = 1.0 + mwheel / 10.0;
+            world.fetch_mut::<CameraRes>().0.zoom *= zoom_fac;
+            let new_camera = world.fetch::<CameraRes>().0;
+            let new_focus = new_camera.screen_to_world(mp);
+
+            let delta_focus = new_focus - old_focus;
+            world.fetch_mut::<CameraRes>().0.offset += delta_focus * new_camera.zoom;
+        }
+
+        macroquad::camera::set_camera(world.fetch::<CameraRes>().0);
+        prev_mouse_pos = new_mouse_pos;
 
         egui_macroquad::draw();
 
