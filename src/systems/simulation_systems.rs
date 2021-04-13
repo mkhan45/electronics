@@ -33,17 +33,17 @@ where
     );
 
     fn run(&mut self, (mut nodes, connections, mut wires): Self::SystemData) {
-        // direct inputs and outputs must be wires
         (&mut nodes).join().for_each(|node| {
             let mut inputs = [false; I];
             for (i, input_entity) in node.inputs.iter().enumerate() {
                 let connection = connections.get(*input_entity).unwrap();
-                match connection.wire {
-                    Some(e) => {
-                        let wire = wires.get(e).expect("All inputs must be a wire");
+                if connection.wires.is_empty() {
+                    return;
+                } else {
+                    connection.wires.iter().for_each(|e| {
+                        let wire = wires.get(*e).expect("All inputs must be a wire");
                         inputs[i] = wire.output_state;
-                    }
-                    None => return,
+                    });
                 }
             }
 
@@ -51,15 +51,15 @@ where
 
             for (i, output_entity) in node.outputs.iter().enumerate() {
                 let connection = connections.get(*output_entity).unwrap();
-                if let Some(e) = connection.wire {
-                    let wire = wires.get_mut(e).unwrap();
+                connection.wires.iter().for_each(|e| {
+                    let wire = wires.get_mut(*e).unwrap();
                     if wire.input_state != outputs[i] {
                         wire.input_state = outputs[i];
                         wire.changed_input = true;
                     } else {
                         wire.changed_input = false;
                     }
-                }
+                });
             }
         })
     }

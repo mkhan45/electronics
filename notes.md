@@ -11,10 +11,23 @@ This makes it easy to iterate through all the connections at once.
 Add Hitbox component
 
 ```rs
-enum Hitbox {
-    Circle(f32), // for nodes/connections
-    Rect(Rect), // for wires
-    Compound(Vec<Hitbox>), // for wires
+#[derive(Clone, Component)]
+pub enum Hitbox {
+    Circle { center: Vec2, radius: f32 },
+    Rectangle { bounds: Rect },
+    Compound { inner: Vec<Hitbox> },
+}
+
+impl Hitbox {
+    pub fn contains(&self, point: Vec2) -> bool {
+        use Hitbox::*;
+
+        match self {
+            Circle { center, radius } => (point - *center).length() <= *radius,
+            Rectangle { bounds } => bounds.contains(point),
+            Compound { inner } => inner.iter().any(|hb| hb.contains(point)),
+        }
+    }
 }
 ```
 

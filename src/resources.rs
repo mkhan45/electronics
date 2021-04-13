@@ -12,14 +12,12 @@ pub struct TickProgress(pub f64);
 #[derive(Default)]
 pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub enum UIState {
     AddingNode(NodeTy),
     AddingWire {
         connection_entity: Entity,
-        wire_entity: Entity,
-        x_pos: Option<f32>,
-        y_pos: Option<f32>,
+        points: Vec<Vec2>,
     },
     Deleting,
     Nothing,

@@ -12,11 +12,12 @@ impl<'a> System<'a> for CleanupWires {
 
     fn run(&mut self, (mut connections, entities): Self::SystemData) {
         (&mut connections).join().for_each(|connection| {
-            if let Some(wire_e) = connection.wire {
-                if !entities.is_alive(wire_e) {
-                    connection.wire = None;
-                }
-            }
+            connection.wires = connection
+                .wires
+                .iter()
+                .filter(|e| entities.is_alive(**e))
+                .copied()
+                .collect();
         });
     }
 }

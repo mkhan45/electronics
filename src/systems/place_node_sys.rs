@@ -39,7 +39,7 @@ where
                     .build_entity()
                     .with(
                         Connection {
-                            wire: None,
+                            wires: Vec::new(),
                             ty: ConnectionTy::Input,
                             index,
                         },
@@ -61,7 +61,7 @@ where
                     .build_entity()
                     .with(
                         Connection {
-                            wire: None,
+                            wires: Vec::new(),
                             ty: ConnectionTy::Output,
                             index,
                         },

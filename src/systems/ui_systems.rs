@@ -15,21 +15,21 @@ impl<'a> System<'a> for CurrentModeSys {
             UIState::AddingNode(_) => {
                 current_mode.0 = "Click to place node".to_string();
             }
-            UIState::AddingWire {
-                x_pos: None,
-                y_pos: Some(_),
-                ..
-            } => {
-                current_mode.0 = "Right click to set wire position".to_string();
-            }
-            UIState::AddingWire {
-                x_pos: Some(_),
-                y_pos: Some(_),
-                ..
-            } => {
-                current_mode.0 =
-                    "Right click a node to set wire output or left click to cancel".to_string();
-            }
+            // UIState::AddingWire {
+            //     x_pos: None,
+            //     y_pos: Some(_),
+            //     ..
+            // } => {
+            //     current_mode.0 = "Right click to set wire position".to_string();
+            // }
+            // UIState::AddingWire {
+            //     x_pos: Some(_),
+            //     y_pos: Some(_),
+            //     ..
+            // } => {
+            //     current_mode.0 =
+            //         "Right click a node to set wire output or left click to cancel".to_string();
+            // }
             UIState::Deleting => {
                 current_mode.0 = "Click a node or wire focus to delete it".to_string();
             }

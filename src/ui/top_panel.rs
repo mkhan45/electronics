@@ -66,7 +66,7 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
             }
 
             let mut tick_frames = world.fetch::<resources::TickFrames>().0;
-            ui.add(egui::Slider::usize(&mut tick_frames, 1..=240).text("Frames per Tick"));
+            ui.add(egui::Slider::usize(&mut tick_frames, 1..=512).text("Frames per Tick"));
             world.insert(resources::TickFrames(tick_frames));
         });
     });

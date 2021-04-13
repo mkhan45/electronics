@@ -1,8 +1,9 @@
-use crate::components::Connection;
-use crate::components::{round_to_snap, Pos};
+use crate::components::{round_to_snap, Pos, SNAP};
+use crate::components::{Connection, ConnectionTy};
 use crate::resources::MousePos;
 use crate::resources::UIState;
 use crate::systems::place_node_sys::PlaceNodeSys;
+use crate::Wire;
 use macroquad::prelude::*;
 use specs::prelude::*;
 
@@ -10,23 +11,11 @@ use crate::nodes;
 pub fn handle_mouse_click(world: &mut World) {
     crate::systems::ui_systems::SwitchClickSys.run_now(world);
 
-    let ui_state = *world.fetch::<UIState>();
+    let mut ui_state = world.fetch_mut::<UIState>();
 
-    match ui_state {
-        UIState::AddingWire { wire_entity, .. } => {
-            // clear UIState including removing the wire entity
-            let wire_placed = {
-                let position_storage = world.read_storage::<Pos>();
-                position_storage.get(wire_entity).is_some()
-            };
-
-            if !wire_placed {
-                world.delete_entity(wire_entity).unwrap();
-
-                crate::systems::cleanup_sys::CleanupWires.run_now(world);
-            }
-
-            world.insert(UIState::Nothing);
+    match *ui_state {
+        UIState::AddingWire { .. } => {
+            *ui_state = UIState::Nothing;
         }
         UIState::AddingNode(n) => {
             macro_rules! place_node_systems {
@@ -44,7 +33,7 @@ pub fn handle_mouse_click(world: &mut World) {
             use crate::all_nodes;
             all_nodes!(place_node_systems);
 
-            world.insert(UIState::Nothing);
+            *ui_state = UIState::Nothing;
         }
         UIState::Deleting => {
             let positions = world.read_storage::<Pos>();
@@ -60,6 +49,7 @@ pub fn handle_mouse_click(world: &mut World) {
                 entities.delete(entity).unwrap();
                 std::mem::drop(positions);
                 std::mem::drop(entities);
+                std::mem::drop(ui_state);
                 crate::systems::cleanup_sys::run_cleanup_systems(entity, world);
                 world.maintain();
                 crate::systems::cleanup_sys::CleanupWires.run_now(world);
@@ -70,32 +60,58 @@ pub fn handle_mouse_click(world: &mut World) {
 }
 
 pub fn handle_mouse_right_click(world: &mut World) {
-    let ui_state = *world.fetch::<UIState>();
+    // let ui_state = *world.fetch::<UIState>();
 
-    match ui_state {
-        UIState::AddingWire {
-            connection_entity,
-            wire_entity,
-            x_pos: None,
-            y_pos: Some(y_pos),
-        } => {
-            let mouse_pos = world.fetch::<MousePos>().0;
-            world.insert(UIState::AddingWire {
-                connection_entity,
-                wire_entity,
-                x_pos: Some(mouse_pos.x),
-                y_pos: Some(y_pos),
-            });
-            world
-                .write_storage::<Pos>()
-                .insert(
-                    wire_entity,
-                    Pos::from_vec(Vec2::new(mouse_pos.x, round_to_snap(y_pos))),
-                )
-                .unwrap();
-        }
-        _ => {
-            crate::systems::place_wire_sys::WirePlaceSys.run_now(world);
-        }
-    }
+    crate::systems::place_wire_sys::WirePlaceSys.run_now(world);
+    // match ui_state {
+    // UIState::AddingWire {
+    //     connection_entity,
+    //     wire_entity,
+    //     x_pos: None,
+    //     y_pos: Some(y_pos),
+    // } => {
+    //     let mp = world.fetch::<MousePos>().0;
+    //     let mut connections = world.write_storage::<Connection>();
+    //     let positions = world.read_storage::<Pos>();
+    //     let clicked = (&mut connections, &positions).join().find_map(|(c, pos)| {
+    //         if (pos.pos - mp).length() < 10.0 && c.ty == ConnectionTy::Input {
+    //             Some(c)
+    //         } else {
+    //             None
+    //         }
+    //     });
+    //     std::mem::drop(positions);
+
+    //     if let Some(connection) = clicked {
+    //         connection.wire = Some(wire_entity);
+    //         std::mem::drop(connections);
+
+    //         {
+    //             let mut wires = world.write_storage::<Wire>();
+    //             let wire = wires.get_mut(wire_entity).unwrap();
+    //             wire.points
+    //                 .push(Vec2::new(round_to_snap(mp.x) - SNAP, y_pos));
+    //         }
+
+    //         world.insert(UIState::Nothing);
+    //     } else {
+    //         std::mem::drop(connections);
+    //         let mouse_pos = world.fetch::<MousePos>().0;
+    //         world.insert(UIState::AddingWire {
+    //             connection_entity,
+    //             wire_entity,
+    //             x_pos: Some(mouse_pos.x),
+    //             y_pos: Some(y_pos),
+    //         });
+
+    //         let mut wires = world.write_storage::<Wire>();
+    //         let wire = wires.get_mut(wire_entity).unwrap();
+
+    //         wire.points
+    //             .push(Vec2::new(round_to_snap(mouse_pos.x), round_to_snap(y_pos)));
+    //     }
+    // }
+    // _ => {
+    // }
+    // }
 }

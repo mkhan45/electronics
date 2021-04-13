@@ -9,6 +9,9 @@ pub struct Wire {
     pub input_state: bool,
     pub output_state: bool,
     pub changed_input: bool,
+    pub start_point: Vec2,
+    pub end_point: Vec2,
+    pub points: Vec<Vec2>,
 }
 
 impl Node<1, 1> for Wire {

@@ -75,9 +75,9 @@ pub enum ConnectionTy {
     Output,
 }
 
-#[derive(Copy, Clone, Component)]
+#[derive(Clone, Component)]
 pub struct Connection {
-    pub wire: Option<Entity>,
+    pub wires: Vec<Entity>,
     pub ty: ConnectionTy,
     pub index: usize,
 }
