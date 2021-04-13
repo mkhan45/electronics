@@ -371,44 +371,14 @@ impl<'a> System<'a> for TempWireDrawSys {
 
                 points.for_each(|sp, ep| {
                     // horizontal
-                    draw_line(sp.x, sp.y, ep.x, sp.y, 5.0, color);
+                    draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, color);
 
                     // vertical
-                    draw_line(ep.x, sp.y, ep.x, ep.y, 5.0, color);
+                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, color);
                 });
             }
             _ => {}
         }
-        // match *ui_state {
-        //     UIState::AddingWire {
-        //         connection_entity: e,
-        //         x_pos: None,
-        //         y_pos: Some(_),
-        //         ..
-        //     } => {
-        //         let start_pos = Pos::from_vec(position_storage.get(e).unwrap().pos).pos;
-
-        //         draw_line(
-        //             start_pos.x,
-        //             start_pos.y,
-        //             snap(mouse_pos.x),
-        //             start_pos.y,
-        //             5.0,
-        //             color,
-        //         );
-        //     }
-        //     UIState::AddingWire {
-        //         x_pos: Some(x_pos),
-        //         y_pos: Some(y_pos),
-        //         ..
-        //     } => {
-        //         let pos = Pos::from_vec(mouse_pos).pos;
-
-        //         draw_line(snap(x_pos), snap(y_pos), snap(x_pos), pos.y, 5.0, color);
-        //         draw_line(snap(x_pos), pos.y, pos.x, pos.y, 5.0, color);
-        //     }
-        //     _ => {}
-        // }
     }
 }
 
