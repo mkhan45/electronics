@@ -1,4 +1,5 @@
 use crate::components::round_to_snap;
+use crate::components::SNAP;
 use crate::components::{Connection, ConnectionTy};
 use crate::resources::UIState;
 use crate::Wire;
@@ -48,9 +49,13 @@ impl<'a> System<'a> for WirePlaceSys {
 
                 let mut points = points.to_vec();
                 if let Some(last) = points.last_mut() {
-                    last.y = end_point.y;
+                    if (last.y - end_point.y).abs() < SNAP {
+                        last.y = end_point.y;
+                    }
                 } else {
-                    start_point.y = end_point.y;
+                    if (start_point.y - end_point.y).abs() < SNAP {
+                        start_point.y = end_point.y;
+                    }
                 }
 
                 // create the wire

@@ -34,208 +34,11 @@ where
     type SystemData = (
         ReadStorage<'a, Pos>,
         ReadStorage<'a, Connected<N, I, O>>,
-        ReadStorage<'a, Connection>,
-        ReadStorage<'a, Wire>,
-        Read<'a, TickProgress>,
         Read<'a, Textures>,
     );
 
-    fn run(
-        &mut self,
-        (positions, nodes, connections, wires, tick_progress, textures): Self::SystemData,
-    ) {
-        // let input_offsets = N::input_offsets();
-
+    fn run(&mut self, (positions, nodes, textures): Self::SystemData) {
         (&positions, &nodes).join().for_each(|(self_pos, node)| {
-            //     let pos = self_pos.pos;
-            //     node.inputs
-            //         .iter()
-            //         .enumerate()
-            //         .filter_map(|(i, c)| connections.get(*c).unwrap().wire.map(|w| (i, w)))
-            //         .for_each(|(i, e)| {
-            //             let wire = wires.get(e).unwrap();
-            //             if let Some(wire_pos) = wire.points.get(0) {
-            //                 let wire = wires.get(e).unwrap();
-
-            //                 let sp = *wire_pos;
-            //                 let ep = Vec2::new(pos.x, pos.y) + input_offsets[i];
-
-            //                 if wire.output_state != wire.input_state {
-            //                     let delta = ((tick_progress.0 - 0.5) * 2.0).clamp(0.0, 1.0) as f32;
-
-            //                     let horizontal_dist = ep.x - sp.x;
-            //                     let vert_dist = ep.y - sp.y;
-            //                     let total_dist = horizontal_dist.abs() + vert_dist.abs();
-            //                     let red_dist = delta * total_dist;
-
-            //                     // vertical
-            //                     {
-            //                         let midpoint = if red_dist < vert_dist.abs() {
-            //                             sp.y + vert_dist.signum() * red_dist
-            //                         } else {
-            //                             sp.y + vert_dist
-            //                         };
-
-            //                         draw_line(
-            //                             sp.x,
-            //                             sp.y,
-            //                             sp.x,
-            //                             midpoint,
-            //                             5.0,
-            //                             if wire.input_state { RED } else { WHITE },
-            //                         );
-
-            //                         if vert_dist.abs() > red_dist {
-            //                             draw_line(
-            //                                 sp.x,
-            //                                 midpoint,
-            //                                 sp.x,
-            //                                 ep.y,
-            //                                 5.0,
-            //                                 if wire.input_state { WHITE } else { RED },
-            //                             )
-            //                         }
-            //                     }
-
-            //                     // horizontal
-            //                     {
-            //                         let midpoint = sp.x
-            //                             + horizontal_dist.signum()
-            //                                 * (red_dist - vert_dist.abs()).max(0.0);
-
-            //                         draw_line(
-            //                             sp.x,
-            //                             ep.y,
-            //                             midpoint,
-            //                             ep.y,
-            //                             5.0,
-            //                             if wire.input_state { RED } else { WHITE },
-            //                         );
-
-            //                         draw_line(
-            //                             midpoint,
-            //                             ep.y,
-            //                             ep.x,
-            //                             ep.y,
-            //                             5.0,
-            //                             if wire.input_state { WHITE } else { RED },
-            //                         );
-
-            //                         let (new_col, old_col) = if wire.input_state {
-            //                             (RED, WHITE)
-            //                         } else {
-            //                             (WHITE, RED)
-            //                         };
-
-            //                         draw_circle(
-            //                             sp.x,
-            //                             ep.y,
-            //                             5.0,
-            //                             if delta >= vert_dist.abs() / total_dist {
-            //                                 new_col
-            //                             } else {
-            //                                 old_col
-            //                             },
-            //                         );
-            //                     }
-            //                 } else {
-            //                     // vertical
-            //                     draw_line(
-            //                         sp.x,
-            //                         sp.y,
-            //                         sp.x,
-            //                         ep.y,
-            //                         5.0,
-            //                         if wire.input_state { RED } else { WHITE },
-            //                     );
-
-            //                     // horizontal
-            //                     draw_line(
-            //                         sp.x,
-            //                         ep.y,
-            //                         ep.x,
-            //                         ep.y,
-            //                         5.0,
-            //                         if wire.input_state { RED } else { WHITE },
-            //                     );
-
-            //                     draw_circle(
-            //                         sp.x,
-            //                         ep.y,
-            //                         5.0,
-            //                         if wire.input_state { RED } else { WHITE },
-            //                     );
-            //                 }
-            //             }
-            //         });
-
-            //     node.outputs
-            //         .iter()
-            //         .filter_map(|c| connections.get(*c).unwrap().wire.as_ref())
-            //         .for_each(|e| {
-            //             let wire = wires.get(*e).unwrap();
-            //             if let Some(wire_pos) = wire.points.last() {
-            //                 let wire = wires.get(*e).unwrap();
-
-            //                 let sp = Vec2::new(pos.x, pos.y);
-            //                 let ep = Vec2::new(wire_pos.x, pos.y);
-
-            //                 if wire.changed_input {
-            //                     let delta = (tick_progress.0 * 2.0).clamp(0.0, 1.0) as f32;
-            //                     let diff = (ep - sp) * delta;
-            //                     let mid = sp + diff;
-
-            //                     draw_line(
-            //                         sp.x,
-            //                         sp.y,
-            //                         mid.x,
-            //                         mid.y,
-            //                         5.0,
-            //                         if wire.input_state { RED } else { WHITE },
-            //                     );
-
-            //                     if mid != ep {
-            //                         draw_line(
-            //                             mid.x,
-            //                             mid.y,
-            //                             ep.x,
-            //                             ep.y,
-            //                             5.0,
-            //                             if wire.input_state { WHITE } else { RED },
-            //                         );
-            //                     }
-
-            //                     let (new_col, old_col) = if wire.input_state {
-            //                         (RED, WHITE)
-            //                     } else {
-            //                         (WHITE, RED)
-            //                     };
-
-            //                     draw_circle(
-            //                         ep.x,
-            //                         sp.y,
-            //                         5.0,
-            //                         if delta >= 0.9 { new_col } else { old_col },
-            //                     );
-            //                 } else {
-            //                     draw_line(
-            //                         sp.x,
-            //                         sp.y,
-            //                         ep.x,
-            //                         sp.y,
-            //                         5.0,
-            //                         if wire.input_state { RED } else { WHITE },
-            //                     );
-
-            //                     draw_circle(
-            //                         ep.x,
-            //                         sp.y,
-            //                         5.0,
-            //                         if wire.input_state { RED } else { WHITE },
-            //                     );
-            //                 }
-            //             }
-            //         });
             (self.draw_fn)(&node.node, *self_pos, &textures);
         });
     }
@@ -258,7 +61,7 @@ impl<'a> std::ops::Index<usize> for Points<'a> {
             i if i < self.points.len() + 1 => &self.points[i - 1],
             _ => panic!(
                 "Invalid Index for points with len {}: {}",
-                self.points.len() + 2,
+                self.points.len() + 1,
                 i
             ),
         }
@@ -306,37 +109,37 @@ impl<'a> System<'a> for DrawWireSys {
             points.for_each(|sp, ep| {
                 // horizontal
                 if new_col_len_remaining > (ep.x - sp.x).abs() {
-                    draw_line(sp.x, sp.y, ep.x, sp.y, 5.0, new_col);
-                    draw_circle(sp.x, sp.y, 5.0, new_col);
-                    draw_circle(ep.x, sp.y, 5.0, new_col);
+                    draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, new_col);
+                    draw_circle(sp.x, ep.y, 5.0, new_col);
+                    draw_circle(ep.x, ep.y, 5.0, new_col);
                     new_col_len_remaining -= (sp.x - ep.x).abs();
                 } else if new_col_len_remaining <= 0.0 {
-                    draw_line(sp.x, sp.y, ep.x, sp.y, 5.0, old_col);
-                    draw_circle(sp.x, sp.y, 5.0, old_col);
-                    draw_circle(ep.x, sp.y, 5.0, old_col);
+                    draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, old_col);
+                    draw_circle(sp.x, ep.y, 5.0, old_col);
+                    draw_circle(ep.x, ep.y, 5.0, old_col);
                 } else {
                     let diff = (ep.x - sp.x).signum();
                     let midpoint = new_col_len_remaining * diff + sp.x;
 
-                    draw_line(sp.x, sp.y, midpoint, sp.y, 5.0, new_col);
-                    draw_line(midpoint, sp.y, ep.x, sp.y, 5.0, old_col);
-                    draw_circle(sp.x, sp.y, 5.0, new_col);
-                    draw_circle(ep.x, sp.y, 5.0, old_col);
+                    draw_line(sp.x, ep.y, midpoint, ep.y, 5.0, new_col);
+                    draw_line(midpoint, ep.y, ep.x, ep.y, 5.0, old_col);
+                    draw_circle(sp.x, ep.y, 5.0, new_col);
+                    draw_circle(ep.x, ep.y, 5.0, old_col);
                     new_col_len_remaining = 0.0
                 }
 
                 // vertical
                 if new_col_len_remaining > (ep.y - sp.y).abs() {
-                    draw_line(ep.x, sp.y, ep.x, ep.y, 5.0, new_col);
+                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, new_col);
                     new_col_len_remaining -= (sp.y - ep.y).abs();
                 } else if new_col_len_remaining <= 0.0 {
-                    draw_line(ep.x, sp.y, ep.x, ep.y, 5.0, old_col);
+                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, old_col);
                 } else {
                     let diff = (ep.y - sp.y).signum();
                     let midpoint = new_col_len_remaining * diff + sp.y;
 
-                    draw_line(ep.x, sp.y, ep.x, midpoint, 5.0, new_col);
-                    draw_line(ep.x, midpoint, ep.x, ep.y, 5.0, old_col);
+                    draw_line(sp.x, sp.y, sp.x, midpoint, 5.0, new_col);
+                    draw_line(sp.x, midpoint, sp.x, ep.y, 5.0, old_col);
                     new_col_len_remaining = 0.0
                 }
             });
