@@ -8,9 +8,13 @@ use specs::prelude::*;
 #[derive(Default)]
 pub struct CleanupWires;
 impl<'a> System<'a> for CleanupWires {
-    type SystemData = (WriteStorage<'a, Connection>, Entities<'a>);
+    type SystemData = (
+        WriteStorage<'a, Connection>,
+        ReadStorage<'a, Wire>,
+        Entities<'a>,
+    );
 
-    fn run(&mut self, (mut connections, entities): Self::SystemData) {
+    fn run(&mut self, (mut connections, wires, entities): Self::SystemData) {
         (&mut connections).join().for_each(|connection| {
             connection.wires = connection
                 .wires
@@ -34,16 +38,24 @@ impl<'a, N, const I: usize, const O: usize> System<'a> for CleanupConnectionSys<
 where
     N: Node<I, O> + 'static,
 {
-    type SystemData = (ReadStorage<'a, Connected<N, I, O>>, Entities<'a>);
+    type SystemData = (
+        ReadStorage<'a, Connected<N, I, O>>,
+        ReadStorage<'a, Connection>,
+        Entities<'a>,
+    );
 
-    fn run(&mut self, (nodes, entities): Self::SystemData) {
+    fn run(&mut self, (nodes, connections, entities): Self::SystemData) {
         if let Some(node) = nodes.get(self.entity) {
             node.inputs
                 .iter()
-                .for_each(|connection| entities.delete(*connection).unwrap());
-            node.outputs
-                .iter()
-                .for_each(|connection| entities.delete(*connection).unwrap());
+                .chain(node.outputs.iter())
+                .for_each(|connection_entity| {
+                    let connection = connections.get(*connection_entity).unwrap();
+                    connection.wires.iter().for_each(|wire| {
+                        entities.delete(*wire).unwrap();
+                    });
+                    entities.delete(*connection_entity).unwrap();
+                });
         }
     }
 }
