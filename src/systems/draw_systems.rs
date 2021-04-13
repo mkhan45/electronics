@@ -107,6 +107,21 @@ impl<'a> System<'a> for DrawWireSys {
             };
 
             points.for_each(|sp, ep| {
+                // vertical
+                if new_col_len_remaining > (ep.y - sp.y).abs() {
+                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, new_col);
+                    new_col_len_remaining -= (sp.y - ep.y).abs();
+                } else if new_col_len_remaining <= 0.0 {
+                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, old_col);
+                } else {
+                    let diff = (ep.y - sp.y).signum();
+                    let midpoint = new_col_len_remaining * diff + sp.y;
+
+                    draw_line(sp.x, sp.y, sp.x, midpoint, 5.0, new_col);
+                    draw_line(sp.x, midpoint, sp.x, ep.y, 5.0, old_col);
+                    new_col_len_remaining = 0.0
+                }
+
                 // horizontal
                 if new_col_len_remaining > (ep.x - sp.x).abs() {
                     draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, new_col);
@@ -125,21 +140,6 @@ impl<'a> System<'a> for DrawWireSys {
                     draw_line(midpoint, ep.y, ep.x, ep.y, 5.0, old_col);
                     draw_circle(sp.x, ep.y, 5.0, new_col);
                     draw_circle(ep.x, ep.y, 5.0, old_col);
-                    new_col_len_remaining = 0.0
-                }
-
-                // vertical
-                if new_col_len_remaining > (ep.y - sp.y).abs() {
-                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, new_col);
-                    new_col_len_remaining -= (sp.y - ep.y).abs();
-                } else if new_col_len_remaining <= 0.0 {
-                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, old_col);
-                } else {
-                    let diff = (ep.y - sp.y).signum();
-                    let midpoint = new_col_len_remaining * diff + sp.y;
-
-                    draw_line(sp.x, sp.y, sp.x, midpoint, 5.0, new_col);
-                    draw_line(sp.x, midpoint, sp.x, ep.y, 5.0, old_col);
                     new_col_len_remaining = 0.0
                 }
             });
