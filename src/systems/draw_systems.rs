@@ -159,30 +159,28 @@ impl<'a> System<'a> for TempWireDrawSys {
         mouse_pos.x = snap(mouse_pos.x);
         mouse_pos.y = snap(mouse_pos.y);
 
-        match &*ui_state {
-            UIState::AddingWire {
-                points: wire_points,
-                connection_entity,
-            } => {
-                let start_point = &position_storage.get(*connection_entity).unwrap().pos;
+        if let UIState::AddingWire {
+            points: wire_points,
+            connection_entity,
+        } = &*ui_state
+        {
+            let start_point = &position_storage.get(*connection_entity).unwrap().pos;
 
-                let points = Points {
-                    start_point,
-                    points: &wire_points,
-                    end_point: &mouse_pos,
-                };
+            let points = Points {
+                start_point,
+                points: &wire_points,
+                end_point: &mouse_pos,
+            };
 
-                points.for_each(|sp, ep| {
-                    // horizontal
-                    draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, color);
+            points.for_each(|sp, ep| {
+                // horizontal
+                draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, color);
 
-                    // vertical
-                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, color);
+                // vertical
+                draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, color);
 
-                    draw_circle(sp.x, ep.y, 5.0, color);
-                });
-            }
-            _ => {}
+                draw_circle(sp.x, ep.y, 5.0, color);
+            });
         }
     }
 }

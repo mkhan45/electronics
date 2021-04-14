@@ -8,13 +8,9 @@ use specs::prelude::*;
 #[derive(Default)]
 pub struct CleanupWires;
 impl<'a> System<'a> for CleanupWires {
-    type SystemData = (
-        WriteStorage<'a, Connection>,
-        ReadStorage<'a, Wire>,
-        Entities<'a>,
-    );
+    type SystemData = (WriteStorage<'a, Connection>, Entities<'a>);
 
-    fn run(&mut self, (mut connections, wires, entities): Self::SystemData) {
+    fn run(&mut self, (mut connections, entities): Self::SystemData) {
         (&mut connections).join().for_each(|connection| {
             connection.wires = connection
                 .wires

@@ -1,10 +1,8 @@
-use crate::components::{round_to_snap, Pos, SNAP};
-use crate::components::{Connection, ConnectionTy};
+use crate::components::Connection;
+use crate::components::Pos;
 use crate::resources::MousePos;
 use crate::resources::UIState;
 use crate::systems::place_node_sys::PlaceNodeSys;
-use crate::Wire;
-use macroquad::prelude::*;
 use specs::prelude::*;
 
 use crate::nodes;
