@@ -6,6 +6,8 @@ use specs::Entity;
 
 use crate::components::nodes::NodeTy;
 
+use rhai;
+
 #[derive(Default)]
 pub struct TickProgress(pub f64);
 
@@ -90,3 +92,8 @@ impl Default for CameraRes {
 
 #[derive(Default)]
 pub struct MousePos(pub Vec2);
+
+#[derive(Default)]
+pub struct RhaiEngine(pub rhai::Engine);
+#[derive(Default)]
+pub struct RhaiScope<'a>(pub rhai::Scope<'a>);

@@ -6,6 +6,7 @@ use specs::prelude::*;
 
 mod components;
 mod resources;
+mod scripting;
 mod svg;
 mod systems;
 mod ui;
@@ -69,6 +70,8 @@ async fn main() {
     world.insert(resources::Tick(0));
     world.insert(resources::TickFrames(60));
     world.insert(resources::CameraRes::default());
+    world.insert(resources::RhaiEngine::default());
+    world.insert(resources::RhaiScope::default());
 
     let mut prev_mouse_pos = {
         let (mx, my) = mouse_position();
@@ -76,6 +79,13 @@ async fn main() {
     };
 
     let mut last_fps = [60i32; 256];
+
+    let script: String = macroquad::file::load_string("test_scripts/basic_circuit.rhai")
+        .await
+        .unwrap();
+
+    scripting::run_circuit_create_sys(script, &world);
+    world.maintain();
 
     loop {
         clear_background(BLACK);
