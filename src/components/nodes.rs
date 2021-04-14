@@ -16,7 +16,7 @@ pub struct Wire {
 
 impl Node<1, 1> for Wire {
     fn calculate_state(&self, i: [bool; 1]) -> [bool; 1] {
-        i
+        dbg!(i)
     }
 }
 
@@ -203,7 +203,7 @@ pub fn add_node_systems<'a, 'b>(builder: DispatcherBuilder<'a, 'b>) -> Dispatche
             builder
                 .with(WireSys, "wire_sys", &[])
                 $(
-                    .with(ElectroSys::<$node, $i, $o>::default(), stringify!($node), &[])
+                    .with(ElectroSys::<$node, $i, $o>::default(), stringify!($node), &["wire_sys"])
                 )*
         };
     }

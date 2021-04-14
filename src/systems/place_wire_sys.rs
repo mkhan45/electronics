@@ -24,70 +24,85 @@ impl<'a> System<'a> for WirePlaceSys {
     ) {
         let mp = mouse_pos.0;
 
-        let clicked = (&mut connections, &positions, &entities)
-            .join()
-            .find(|(_, Pos { pos, .. }, _)| (*pos - mp).length() < 7.5);
-
         match &*ui_state {
             UIState::Nothing => {
                 // if a connection output is clicked, initialize wire adding
-                if let Some((_, Pos { pos, .. }, connection_entity)) = clicked {
+                let clicked_output = (&mut connections, &positions, &entities).join().find(
+                    |(conn, Pos { pos, .. }, _)| {
+                        conn.ty == ConnectionTy::Output && (*pos - mp).length() < 7.5
+                    },
+                );
+
+                if let Some((_, Pos { pos, .. }, connection_entity)) = clicked_output {
                     *ui_state = UIState::AddingWire {
                         connection_entity,
                         points: vec![*pos],
                     };
                 }
             }
-            UIState::AddingWire {
-                points,
-                connection_entity,
-            } if clicked.is_some() => {
-                let (clicked_connection, clicked_pos, _) = clicked.unwrap();
+            UIState::AddingWire { .. } => {
+                let clicked_input = (&mut connections, &positions, &entities).join().find(
+                    |(conn, Pos { pos, .. }, _)| {
+                        conn.ty == ConnectionTy::Input && (*pos - mp).length() < 7.5
+                    },
+                );
 
-                let mut start_point = positions.get(*connection_entity).unwrap().pos;
-                let end_point = clicked_pos.pos;
+                match &*ui_state {
+                    UIState::AddingWire {
+                        points,
+                        connection_entity,
+                    } if clicked_input.is_some() => {
+                        let (clicked_connection, clicked_pos, _) = clicked_input.unwrap();
 
-                let mut points = points.to_vec();
-                if let Some(last) = points.last_mut() {
-                    if (last.y - end_point.y).abs() < SNAP / 2.0 {
-                        last.y = end_point.y;
+                        let mut start_point = positions.get(*connection_entity).unwrap().pos;
+                        let end_point = clicked_pos.pos;
+
+                        let mut points = points.to_vec();
+                        points.push(end_point);
+
+                        if let Some(last) = points.last_mut() {
+                            if (last.y - end_point.y).abs() < SNAP / 2.0 {
+                                last.y = end_point.y;
+                            }
+                        } else {
+                            if (start_point.y - end_point.y).abs() < SNAP / 2.0 {
+                                start_point.y = end_point.y;
+                            }
+                        }
+
+                        // create the wire
+                        let wire_entity = entities
+                            .build_entity()
+                            .with(
+                                Wire {
+                                    start_point,
+                                    end_point,
+                                    points,
+                                    ..Wire::default()
+                                },
+                                &mut wires,
+                            )
+                            .build();
+
+                        // update the connections
+                        clicked_connection.wires.push(wire_entity);
+                        let fst_conn = connections.get_mut(*connection_entity).unwrap();
+                        fst_conn.wires.push(wire_entity);
+
+                        *ui_state = UIState::Nothing;
                     }
-                } else {
-                    if (start_point.y - end_point.y).abs() < SNAP / 2.0 {
-                        start_point.y = end_point.y;
-                    }
-                }
-
-                // create the wire
-                let wire_entity = entities
-                    .build_entity()
-                    .with(
-                        Wire {
-                            start_point,
-                            end_point,
+                    UIState::AddingWire {
+                        points,
+                        connection_entity,
+                    } if clicked_input.is_none() => {
+                        let mut points = points.clone();
+                        points.push(Vec2::new(round_to_snap(mp.x), round_to_snap(mp.y)));
+                        *ui_state = UIState::AddingWire {
                             points,
-                            ..Wire::default()
-                        },
-                        &mut wires,
-                    )
-                    .build();
-
-                // update the connections
-                clicked_connection.wires.push(wire_entity);
-                let fst_conn = connections.get_mut(*connection_entity).unwrap();
-                fst_conn.wires.push(wire_entity);
-
-                *ui_state = UIState::Nothing;
-            }
-            UIState::AddingWire {
-                points,
-                connection_entity,
-            } if clicked.is_none() => {
-                let mut points = points.clone();
-                points.push(Vec2::new(round_to_snap(mp.x), round_to_snap(mp.y)));
-                *ui_state = UIState::AddingWire {
-                    points,
-                    connection_entity: *connection_entity,
+                            connection_entity: *connection_entity,
+                        }
+                    }
+                    _ => unreachable!(),
                 }
             }
             _ => {}

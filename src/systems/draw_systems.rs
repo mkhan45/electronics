@@ -178,6 +178,8 @@ impl<'a> System<'a> for TempWireDrawSys {
 
                     // vertical
                     draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, color);
+
+                    draw_circle(sp.x, ep.y, 5.0, color);
                 });
             }
             _ => {}

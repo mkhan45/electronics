@@ -46,7 +46,7 @@ pub struct Pos {
     pub pos: Vec2,
 }
 
-pub const SNAP: f32 = 75.0;
+pub const SNAP: f32 = 50.0;
 
 pub fn round_to_snap(x: f32) -> f32 {
     (x / SNAP).round() * SNAP
