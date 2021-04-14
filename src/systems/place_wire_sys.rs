@@ -49,11 +49,11 @@ impl<'a> System<'a> for WirePlaceSys {
 
                 let mut points = points.to_vec();
                 if let Some(last) = points.last_mut() {
-                    if (last.y - end_point.y).abs() < SNAP {
+                    if (last.y - end_point.y).abs() < SNAP / 2.0 {
                         last.y = end_point.y;
                     }
                 } else {
-                    if (start_point.y - end_point.y).abs() < SNAP {
+                    if (start_point.y - end_point.y).abs() < SNAP / 2.0 {
                         start_point.y = end_point.y;
                     }
                 }
