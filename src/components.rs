@@ -81,3 +81,8 @@ pub struct Connection {
     pub ty: ConnectionTy,
     pub index: usize,
 }
+
+#[derive(Component)]
+pub struct CompoundNode {
+    pub world: World,
+}
