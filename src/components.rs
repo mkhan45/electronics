@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use macroquad::prelude::Vec2;
 use specs::{prelude::*, Component};
 
@@ -82,7 +84,12 @@ pub struct Connection {
     pub index: usize,
 }
 
-#[derive(Component)]
+#[derive(Default, Clone, Component)]
 pub struct CompoundNode {
-    pub world: World,
+    pub inner: HashSet<Entity>,
+}
+
+#[derive(Clone, Component)]
+pub struct InnerNode {
+    pub parent: Entity,
 }

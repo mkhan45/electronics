@@ -161,24 +161,24 @@ pub fn create_circuit(circuit: Array, world: &World) {
     });
 }
 
-pub fn run_circuit_create_sys(script: String, world: &World) {
-    use crate::all_nodes;
-    use crate::nodes::*;
+// pub fn run_circuit_create_sys(script: String, world: &World) {
+//     use crate::all_nodes;
+//     use crate::nodes::*;
 
-    {
-        let engine = &world.fetch::<RhaiEngine>().0;
-        let scope = &mut world.fetch_mut::<RhaiScope>().0;
+//     {
+//         let engine = &world.fetch::<RhaiEngine>().0;
+//         let scope = &mut world.fetch_mut::<RhaiScope>().0;
 
-        engine.eval_with_scope::<()>(scope, &script).unwrap();
-    }
+//         engine.eval_with_scope::<()>(scope, &script).unwrap();
+//     }
 
-    macro_rules! run_sys {
-        ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
-            $(
-                CreateScriptedCircuitSys { node: PhantomData::<$node>, node_name: stringify!($node).to_string() }.run_now(world);
-            )*
-        };
-    }
+//     macro_rules! run_sys {
+//         ( $([$node:ident, $i:expr, $o:expr]),* $(,)? ) => {
+//             $(
+//                 CreateScriptedCircuitSys { node: PhantomData::<$node>, node_name: stringify!($node).to_string() }.run_now(world);
+//             )*
+//         };
+//     }
 
-    all_nodes!(run_sys);
-}
+//     all_nodes!(run_sys);
+// }

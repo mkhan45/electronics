@@ -1,4 +1,4 @@
-use crate::resources::{self, GridMode};
+use crate::resources::{self, CreatingCompoundNode, GridMode};
 use crate::resources::{CurrentModeText, UiSignals};
 use crate::ResetSys;
 use crate::{components::nodes, UiSignal};
@@ -55,6 +55,22 @@ pub fn render_top_panel(ui: &mut egui::Ui, world: &mut World) {
 
             if ui.button("Remove All").clicked() {
                 world.delete_all();
+            }
+
+            match world.fetch::<CreatingCompoundNode>().0 {
+                Some(_) => {
+                    if ui.button("Save Compound Node").clicked() {
+                        world
+                            .fetch_mut::<UiSignals>()
+                            .0
+                            .push(UiSignal::SaveCompoundNode);
+                    }
+                }
+                None => {
+                    if ui.button("Create Node").clicked() {
+                        world.fetch_mut::<UiSignals>().0.push(UiSignal::CreateNode);
+                    }
+                }
             }
         });
 

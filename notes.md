@@ -1,3 +1,15 @@
+# Compound Nodes
+
+Outer compound node component
+
+Inner compound node component
+
+Eventually wanna have a stack of what compound node you're editing/viewing
+
+Only iterate the nodes that are at the current level except for simulation, where we simulate everything lower
+
+Switches should be replaced by input connections
+
 # Connection rework
 
 Right now, wire inputs are pushed to by a node, and then the outputs pull from the input, and then the next node pulls from the output.

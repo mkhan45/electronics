@@ -6,7 +6,7 @@ use specs::prelude::*;
 
 mod components;
 mod resources;
-mod scripting;
+// mod scripting;
 mod svg;
 mod systems;
 mod ui;
@@ -72,6 +72,7 @@ async fn main() {
     world.insert(resources::CameraRes::default());
     world.insert(resources::RhaiEngine::default());
     world.insert(resources::RhaiScope::default());
+    world.insert(resources::CreatingCompoundNode::default());
 
     let mut prev_mouse_pos = {
         let (mx, my) = mouse_position();
@@ -80,12 +81,12 @@ async fn main() {
 
     let mut last_fps = [60i32; 256];
 
-    let script: String = macroquad::file::load_string("test_scripts/basic_circuit.rhai")
-        .await
-        .unwrap();
+    // let script: String = macroquad::file::load_string("test_scripts/basic_circuit.rhai")
+    //     .await
+    //     .unwrap();
 
-    scripting::run_circuit_create_sys(script, &world);
-    world.maintain();
+    // scripting::run_circuit_create_sys(script, &world);
+    // world.maintain();
 
     loop {
         clear_background(BLACK);
@@ -116,6 +117,15 @@ async fn main() {
             ui_signals.iter().for_each(|signal| match signal {
                 UiSignal::AddNode(ty) => world.insert(resources::UIState::AddingNode(*ty)),
                 UiSignal::Delete => world.insert(resources::UIState::Deleting),
+                UiSignal::CreateNode => {
+                    world.insert(resources::UIState::Nothing);
+                    let compound_node = world
+                        .create_entity()
+                        .with(components::CompoundNode::default())
+                        .build();
+                    world.insert(resources::CreatingCompoundNode(Some(compound_node)));
+                }
+                UiSignal::SaveCompoundNode => todo!(),
             });
             world.insert(resources::UiSignals(Vec::new()));
         }

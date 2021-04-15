@@ -14,6 +14,9 @@ pub struct TickProgress(pub f64);
 #[derive(Default)]
 pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 
+#[derive(Default)]
+pub struct CreatingCompoundNode(pub Option<Entity>);
+
 #[derive(Clone)]
 pub enum UIState {
     AddingNode(NodeTy),
@@ -35,6 +38,8 @@ impl Default for UIState {
 pub enum UiSignal {
     AddNode(NodeTy),
     Delete,
+    CreateNode,
+    SaveCompoundNode,
 }
 
 #[derive(Default)]
