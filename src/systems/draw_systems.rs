@@ -1,4 +1,3 @@
-use crate::{components::nodes::NandNode, nodes::NotNode};
 use crate::{components::nodes::NorNode, nodes::OnNode};
 use crate::{components::nodes::XnorNode, nodes::XorNode};
 use crate::{
@@ -10,6 +9,10 @@ use crate::{components::Connection, nodes::SwitchNode};
 use crate::{
     components::{nodes::AndNode, Node},
     resources::Textures,
+};
+use crate::{
+    components::{nodes::NandNode, CurrentScope},
+    nodes::NotNode,
 };
 use crate::{resources::CameraRes, Wire};
 use crate::{resources::GridMode, Connected};
@@ -34,13 +37,16 @@ where
     type SystemData = (
         ReadStorage<'a, Pos>,
         ReadStorage<'a, Connected<N, I, O>>,
+        ReadStorage<'a, CurrentScope>,
         Read<'a, Textures>,
     );
 
-    fn run(&mut self, (positions, nodes, textures): Self::SystemData) {
-        (&positions, &nodes).join().for_each(|(self_pos, node)| {
-            (self.draw_fn)(&node.node, *self_pos, &textures);
-        });
+    fn run(&mut self, (positions, nodes, current_scope_markers, textures): Self::SystemData) {
+        (&positions, &nodes, &current_scope_markers)
+            .join()
+            .for_each(|(self_pos, node, _)| {
+                (self.draw_fn)(&node.node, *self_pos, &textures);
+            });
     }
 }
 
@@ -81,69 +87,75 @@ impl<'a> Points<'a> {
 
 pub struct DrawWireSys;
 impl<'a> System<'a> for DrawWireSys {
-    type SystemData = (ReadStorage<'a, Wire>, Read<'a, TickProgress>);
+    type SystemData = (
+        ReadStorage<'a, Wire>,
+        ReadStorage<'a, CurrentScope>,
+        Read<'a, TickProgress>,
+    );
 
-    fn run(&mut self, (wires, tick_progress): Self::SystemData) {
-        wires.join().for_each(|wire| {
-            let points = Points {
-                start_point: &wire.start_point,
-                end_point: &wire.end_point,
-                points: &wire.points,
-            };
+    fn run(&mut self, (wires, current_scope_markers, tick_progress): Self::SystemData) {
+        (&wires, &current_scope_markers)
+            .join()
+            .for_each(|(wire, _)| {
+                let points = Points {
+                    start_point: &wire.start_point,
+                    end_point: &wire.end_point,
+                    points: &wire.points,
+                };
 
-            let mut total_len = 0.0;
-            points.for_each(|sp, ep| total_len += (ep.x - sp.x).abs() + (ep.y - sp.y).abs());
+                let mut total_len = 0.0;
+                points.for_each(|sp, ep| total_len += (ep.x - sp.x).abs() + (ep.y - sp.y).abs());
 
-            let mut new_col_len_remaining = tick_progress.0 as f32 * total_len;
+                let mut new_col_len_remaining = tick_progress.0 as f32 * total_len;
 
-            if wire.output_state == wire.input_state {
-                new_col_len_remaining = total_len;
-            }
-
-            let (new_col, old_col) = if wire.input_state {
-                (RED, WHITE)
-            } else {
-                (WHITE, RED)
-            };
-
-            points.for_each(|sp, ep| {
-                // vertical
-                if new_col_len_remaining > (ep.y - sp.y).abs() {
-                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, new_col);
-                    new_col_len_remaining -= (sp.y - ep.y).abs();
-                } else if new_col_len_remaining <= 0.0 {
-                    draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, old_col);
-                } else {
-                    let diff = (ep.y - sp.y).signum();
-                    let midpoint = new_col_len_remaining * diff + sp.y;
-
-                    draw_line(sp.x, sp.y, sp.x, midpoint, 5.0, new_col);
-                    draw_line(sp.x, midpoint, sp.x, ep.y, 5.0, old_col);
-                    new_col_len_remaining = 0.0
+                if wire.output_state == wire.input_state {
+                    new_col_len_remaining = total_len;
                 }
 
-                // horizontal
-                if new_col_len_remaining > (ep.x - sp.x).abs() {
-                    draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, new_col);
-                    draw_circle(sp.x, ep.y, 5.0, new_col);
-                    draw_circle(ep.x, ep.y, 5.0, new_col);
-                    new_col_len_remaining -= (sp.x - ep.x).abs();
-                } else if new_col_len_remaining <= 0.0 {
-                    draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, old_col);
-                    draw_circle(sp.x, ep.y, 5.0, old_col);
-                    draw_circle(ep.x, ep.y, 5.0, old_col);
+                let (new_col, old_col) = if wire.input_state {
+                    (RED, WHITE)
                 } else {
-                    let diff = (ep.x - sp.x).signum();
-                    let midpoint = new_col_len_remaining * diff + sp.x;
+                    (WHITE, RED)
+                };
 
-                    draw_line(sp.x, ep.y, midpoint, ep.y, 5.0, new_col);
-                    draw_line(midpoint, ep.y, ep.x, ep.y, 5.0, old_col);
-                    draw_circle(sp.x, ep.y, 5.0, new_col);
-                    draw_circle(ep.x, ep.y, 5.0, old_col);
-                    new_col_len_remaining = 0.0
-                }
+                points.for_each(|sp, ep| {
+                    // vertical
+                    if new_col_len_remaining > (ep.y - sp.y).abs() {
+                        draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, new_col);
+                        new_col_len_remaining -= (sp.y - ep.y).abs();
+                    } else if new_col_len_remaining <= 0.0 {
+                        draw_line(sp.x, sp.y, sp.x, ep.y, 5.0, old_col);
+                    } else {
+                        let diff = (ep.y - sp.y).signum();
+                        let midpoint = new_col_len_remaining * diff + sp.y;
+
+                        draw_line(sp.x, sp.y, sp.x, midpoint, 5.0, new_col);
+                        draw_line(sp.x, midpoint, sp.x, ep.y, 5.0, old_col);
+                        new_col_len_remaining = 0.0
+                    }
+
+                    // horizontal
+                    if new_col_len_remaining > (ep.x - sp.x).abs() {
+                        draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, new_col);
+                        draw_circle(sp.x, ep.y, 5.0, new_col);
+                        draw_circle(ep.x, ep.y, 5.0, new_col);
+                        new_col_len_remaining -= (sp.x - ep.x).abs();
+                    } else if new_col_len_remaining <= 0.0 {
+                        draw_line(sp.x, ep.y, ep.x, ep.y, 5.0, old_col);
+                        draw_circle(sp.x, ep.y, 5.0, old_col);
+                        draw_circle(ep.x, ep.y, 5.0, old_col);
+                    } else {
+                        let diff = (ep.x - sp.x).signum();
+                        let midpoint = new_col_len_remaining * diff + sp.x;
+
+                        draw_line(sp.x, ep.y, midpoint, ep.y, 5.0, new_col);
+                        draw_line(midpoint, ep.y, ep.x, ep.y, 5.0, old_col);
+                        draw_circle(sp.x, ep.y, 5.0, new_col);
+                        draw_circle(ep.x, ep.y, 5.0, old_col);
+                        new_col_len_remaining = 0.0
+                    }
+                });
             });
-        });
     }
 }
 
@@ -190,10 +202,14 @@ impl<'a> System<'a> for DrawConnectionSys {
     type SystemData = (
         ReadStorage<'a, Connection>,
         ReadStorage<'a, Pos>,
+        ReadStorage<'a, CurrentScope>,
         Read<'a, MousePos>,
     );
 
-    fn run(&mut self, (connections, positions, mouse_pos): Self::SystemData) {
+    fn run(
+        &mut self,
+        (connections, positions, current_scope_markers, mouse_pos): Self::SystemData,
+    ) {
         let mouse_pos = mouse_pos.0;
 
         let color = |pos: Vec2| {
@@ -204,9 +220,9 @@ impl<'a> System<'a> for DrawConnectionSys {
             }
         };
 
-        (&connections, &positions)
+        (&connections, &positions, &current_scope_markers)
             .join()
-            .for_each(|(_, Pos { pos, .. })| draw_circle(pos.x, pos.y, 10.0, color(*pos)));
+            .for_each(|(_, Pos { pos, .. }, _)| draw_circle(pos.x, pos.y, 10.0, color(*pos)));
     }
 }
 

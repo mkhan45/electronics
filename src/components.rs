@@ -87,9 +87,16 @@ pub struct Connection {
 #[derive(Default, Clone, Component)]
 pub struct CompoundNode {
     pub inner: HashSet<Entity>,
+    pub name: String,
 }
 
 #[derive(Clone, Component)]
 pub struct InnerNode {
     pub parent: Entity,
 }
+
+#[derive(Copy, Clone, Component)]
+pub struct NodeMarker;
+
+#[derive(Copy, Clone, Component)]
+pub struct CurrentScope;

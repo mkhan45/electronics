@@ -10,6 +10,12 @@ Only iterate the nodes that are at the current level except for simulation, wher
 
 Switches should be replaced by input connections
 
+Gotta add parent compound node to created nodes
+
+Add a special output node
+
+Save nodes into a resource HashMap<String, CompoundNode> and clone the entities around?
+
 # Connection rework
 
 Right now, wire inputs are pushed to by a node, and then the outputs pull from the input, and then the next node pulls from the output.

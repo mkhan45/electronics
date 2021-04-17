@@ -1,4 +1,5 @@
 use crate::nodes::Wire;
+use crate::resources::CompoundNodeData;
 use crate::resources::UiSignal;
 use macroquad::prelude::*;
 use resources::CameraRes;
@@ -73,6 +74,12 @@ async fn main() {
     world.insert(resources::RhaiEngine::default());
     world.insert(resources::RhaiScope::default());
     world.insert(resources::CreatingCompoundNode::default());
+    world.register::<components::CompoundNode>();
+    world.register::<components::NodeMarker>();
+    specs::System::setup(
+        &mut systems::update_current_scope_sys::UpdateCurrentScopeSys,
+        &mut world,
+    );
 
     let mut prev_mouse_pos = {
         let (mx, my) = mouse_position();
@@ -123,9 +130,26 @@ async fn main() {
                         .create_entity()
                         .with(components::CompoundNode::default())
                         .build();
-                    world.insert(resources::CreatingCompoundNode(Some(compound_node)));
+                    world.insert(resources::CreatingCompoundNode(Some(CompoundNodeData {
+                        entity: compound_node,
+                        name: "".to_string(),
+                    })));
+                    systems::update_current_scope_sys::UpdateCurrentScopeSys.run_now(&world);
                 }
-                UiSignal::SaveCompoundNode => todo!(),
+                UiSignal::SaveCompoundNode => {
+                    let mut compound_node_data =
+                        world.fetch_mut::<resources::CreatingCompoundNode>();
+                    let data = compound_node_data.0.as_mut().unwrap();
+                    world
+                        .write_storage::<components::CompoundNode>()
+                        .get_mut(data.entity)
+                        .unwrap()
+                        .name = data.name.to_owned();
+
+                    std::mem::drop(compound_node_data);
+                    world.insert(resources::CreatingCompoundNode(None));
+                    systems::update_current_scope_sys::UpdateCurrentScopeSys.run_now(&world);
+                }
             });
             world.insert(resources::UiSignals(Vec::new()));
         }

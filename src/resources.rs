@@ -15,7 +15,12 @@ pub struct TickProgress(pub f64);
 pub struct Textures(pub std::collections::BTreeMap<String, Texture2D>);
 
 #[derive(Default)]
-pub struct CreatingCompoundNode(pub Option<Entity>);
+pub struct CreatingCompoundNode(pub Option<CompoundNodeData>);
+
+pub struct CompoundNodeData {
+    pub entity: Entity,
+    pub name: String,
+}
 
 #[derive(Clone)]
 pub enum UIState {

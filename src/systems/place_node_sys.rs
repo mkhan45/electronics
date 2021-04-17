@@ -1,4 +1,4 @@
-use crate::components::{Connection, ConnectionTy, Node};
+use crate::components::{Connection, ConnectionTy, CurrentScope, Node, NodeMarker};
 use crate::Pos;
 use crate::{resources::MousePos, Connected};
 use core::marker::PhantomData;
@@ -21,13 +21,23 @@ where
         WriteStorage<'a, Connected<N, I, O>>,
         WriteStorage<'a, Pos>,
         WriteStorage<'a, Connection>,
+        WriteStorage<'a, NodeMarker>,
+        WriteStorage<'a, CurrentScope>,
         Read<'a, MousePos>,
         Entities<'a>,
     );
 
     fn run(
         &mut self,
-        (mut node_storage, mut position_storage, mut connections, mouse_pos, entities): Self::SystemData,
+        (
+            mut node_storage,
+            mut position_storage,
+            mut connections,
+            mut node_markers,
+            mut current_scope_markers,
+            mouse_pos,
+            entities,
+        ): Self::SystemData,
     ) {
         let pos = Pos::from_vec(mouse_pos.0);
         let input_offsets = N::input_offsets();
@@ -37,6 +47,7 @@ where
             .map(|index| {
                 entities
                     .build_entity()
+                    .with(CurrentScope, &mut current_scope_markers)
                     .with(
                         Connection {
                             wires: Vec::new(),
@@ -59,6 +70,7 @@ where
             .map(|index| {
                 entities
                     .build_entity()
+                    .with(CurrentScope, &mut current_scope_markers)
                     .with(
                         Connection {
                             wires: Vec::new(),
@@ -79,6 +91,8 @@ where
 
         entities
             .build_entity()
+            .with(NodeMarker, &mut node_markers)
+            .with(CurrentScope, &mut current_scope_markers)
             .with(
                 Connected {
                     node: N::default(),
