@@ -12,7 +12,10 @@ mod svg;
 mod systems;
 mod ui;
 
-use components::nodes::{self, add_node_systems};
+use components::{
+    nodes::{self, add_node_systems},
+    InnerNode,
+};
 use components::{Connected, Pos};
 use systems::draw_systems::add_draw_system;
 use systems::simulation_systems::*;
@@ -140,14 +143,25 @@ async fn main() {
                     let mut compound_node_data =
                         world.fetch_mut::<resources::CreatingCompoundNode>();
                     let data = compound_node_data.0.as_mut().unwrap();
+
                     world
                         .write_storage::<components::CompoundNode>()
                         .get_mut(data.entity)
                         .unwrap()
                         .name = data.name.to_owned();
 
+                    {
+                        let entities = world.entities();
+                        let inner_nodes = world.read_storage::<InnerNode>();
+                        (&inner_nodes, &entities)
+                            .join()
+                            .filter(|(inner_node, _)| inner_node.parent == data.entity)
+                            .for_each(|(_, entity)| entities.delete(entity).unwrap());
+                    }
+
                     std::mem::drop(compound_node_data);
                     world.insert(resources::CreatingCompoundNode(None));
+
                     systems::update_current_scope_sys::UpdateCurrentScopeSys.run_now(&world);
                 }
             });

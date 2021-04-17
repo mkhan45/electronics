@@ -1,9 +1,13 @@
-use crate::components::{round_to_snap, InnerNode};
 use crate::components::{Connection, ConnectionTy};
 use crate::components::{CurrentScope, SNAP};
 use crate::resources::UIState;
+use crate::CompoundNodeData;
 use crate::Wire;
 use crate::{components::Pos, resources::MousePos};
+use crate::{
+    components::{round_to_snap, InnerNode},
+    resources::CreatingCompoundNode,
+};
 use macroquad::prelude::Vec2;
 use specs::prelude::*;
 
@@ -17,6 +21,7 @@ impl<'a> System<'a> for WirePlaceSys {
         ReadStorage<'a, Pos>,
         Write<'a, UIState>,
         Read<'a, MousePos>,
+        Read<'a, CreatingCompoundNode>,
         Entities<'a>,
     );
 
@@ -25,11 +30,12 @@ impl<'a> System<'a> for WirePlaceSys {
         (
             mut connections,
             mut wires,
-            mut _inner_node_data,
+            mut inner_node_data,
             mut current_scope_markers,
             positions,
             mut ui_state,
             mouse_pos,
+            creating_compound,
             entities,
         ): Self::SystemData,
     ) {
@@ -92,19 +98,25 @@ impl<'a> System<'a> for WirePlaceSys {
                         }
 
                         // create the wire
-                        let wire_entity = entities
-                            .build_entity()
-                            .with(CurrentScope, &mut current_scope_markers)
-                            .with(
-                                Wire {
-                                    start_point,
-                                    end_point,
-                                    points,
-                                    ..Wire::default()
-                                },
-                                &mut wires,
-                            )
-                            .build();
+                        let wire_entity = {
+                            let mut builder = entities
+                                .build_entity()
+                                .with(CurrentScope, &mut current_scope_markers)
+                                .with(
+                                    Wire {
+                                        start_point,
+                                        end_point,
+                                        points,
+                                        ..Wire::default()
+                                    },
+                                    &mut wires,
+                                );
+                            if let Some(CompoundNodeData { entity, .. }) = creating_compound.0 {
+                                builder = builder
+                                    .with(InnerNode { parent: entity }, &mut inner_node_data);
+                            }
+                            builder.build()
+                        };
 
                         // update the connections
                         clicked_connection.wires.push(wire_entity);

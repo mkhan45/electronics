@@ -1,5 +1,8 @@
-use crate::components::{Connection, ConnectionTy, CurrentScope, Node, NodeMarker};
-use crate::Pos;
+use crate::{
+    components::{Connection, ConnectionTy, CurrentScope, InnerNode, Node, NodeMarker},
+    resources::CreatingCompoundNode,
+};
+use crate::{resources::CompoundNodeData, Pos};
 use crate::{resources::MousePos, Connected};
 use core::marker::PhantomData;
 use specs::prelude::*;
@@ -23,7 +26,9 @@ where
         WriteStorage<'a, Connection>,
         WriteStorage<'a, NodeMarker>,
         WriteStorage<'a, CurrentScope>,
+        WriteStorage<'a, InnerNode>,
         Read<'a, MousePos>,
+        Read<'a, CreatingCompoundNode>,
         Entities<'a>,
     );
 
@@ -35,7 +40,9 @@ where
             mut connections,
             mut node_markers,
             mut current_scope_markers,
+            mut inner_nodes,
             mouse_pos,
+            creating_compound,
             entities,
         ): Self::SystemData,
     ) {
@@ -43,9 +50,19 @@ where
         let input_offsets = N::input_offsets();
         let output_offsets = N::output_offsets();
 
+        // I wanted this to be a closure but ownership pain
+        // that's probably a code smell
+        macro_rules! add_inner_node_data {
+            ( $builder:expr ) => {
+                if let Some(CompoundNodeData { entity, .. }) = creating_compound.0 {
+                    $builder = $builder.with(InnerNode { parent: entity }, &mut inner_nodes);
+                }
+            };
+        }
+
         let inputs = (0..I)
             .map(|index| {
-                entities
+                let mut builder = entities
                     .build_entity()
                     .with(CurrentScope, &mut current_scope_markers)
                     .with(
@@ -59,8 +76,12 @@ where
                     .with(
                         Pos::from_vec_unrounded(pos.pos + input_offsets[index]),
                         &mut position_storage,
-                    )
-                    .build()
+                    );
+                add_inner_node_data!(builder);
+                // if let Some(CompoundNodeData { entity, .. }) = creating_compound.0 {
+                //     builder = builder.with(InnerNode { parent: entity }, &mut inner_nodes);
+                // }
+                builder.build()
             })
             .collect::<Vec<_>>()
             .try_into()
@@ -68,7 +89,7 @@ where
 
         let outputs = (0..O)
             .map(|index| {
-                entities
+                let mut builder = entities
                     .build_entity()
                     .with(CurrentScope, &mut current_scope_markers)
                     .with(
@@ -82,14 +103,15 @@ where
                     .with(
                         Pos::from_vec_unrounded(pos.pos + output_offsets[index]),
                         &mut position_storage,
-                    )
-                    .build()
+                    );
+                add_inner_node_data!(builder);
+                builder.build()
             })
             .collect::<Vec<_>>()
             .try_into()
             .unwrap();
 
-        entities
+        let mut builder = entities
             .build_entity()
             .with(NodeMarker, &mut node_markers)
             .with(CurrentScope, &mut current_scope_markers)
@@ -101,7 +123,8 @@ where
                 },
                 &mut node_storage,
             )
-            .with(pos, &mut position_storage)
-            .build();
+            .with(pos, &mut position_storage);
+        add_inner_node_data!(builder);
+        builder.build();
     }
 }

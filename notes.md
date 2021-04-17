@@ -16,6 +16,8 @@ Add a special output node
 
 Save nodes into a resource HashMap<String, CompoundNode> and clone the entities around?
 
+Add more stuff to CreatingCompoundNode with # of inputs, outputs
+
 # Connection rework
 
 Right now, wire inputs are pushed to by a node, and then the outputs pull from the input, and then the next node pulls from the output.

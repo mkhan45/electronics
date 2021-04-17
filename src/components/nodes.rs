@@ -16,7 +16,7 @@ pub struct Wire {
 
 impl Node<1, 1> for Wire {
     fn calculate_state(&self, i: [bool; 1]) -> [bool; 1] {
-        dbg!(i)
+        i
     }
 }
 
