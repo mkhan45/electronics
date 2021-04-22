@@ -4,7 +4,7 @@ use crate::systems::simulation_systems::WireSys;
 use macroquad::prelude::Vec2;
 use specs::{prelude::*, Component};
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Clone)]
 pub struct Wire {
     pub input_state: bool,
     pub output_state: bool,

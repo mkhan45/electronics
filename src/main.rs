@@ -7,7 +7,7 @@ use specs::prelude::*;
 
 mod components;
 mod resources;
-// mod scripting;
+mod scripting;
 mod svg;
 mod systems;
 mod ui;

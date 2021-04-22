@@ -17,6 +17,9 @@ egui = "0.10.0"
 
 rhai = { version = "0.19.15" }
 
+serde = { version = "1.0.125", features = ["derive"] }
+bincode = "1.3.3"
+
 [profile.release]
 opt-level = 's'
 

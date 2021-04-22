@@ -11,6 +11,58 @@ use crate::{
     resources::{RhaiEngine, RhaiScope},
 };
 
+// Ok so the logical graph structure is potentially cyclic and pretty wonky actually so it's
+// impossible to describe it just using straightforward JSON or similar
+//
+// This basically just seeks to make the Rhai code mirror the Rust circuit creation; it's not great
+// for humans to write but it's fine for auto serialization and deserialization
+
+pub fn create_circuit(world: &mut World) {
+    // 1. Create wires
+    // 2. Get RhaiNodes which contain a type, [[input wires]], [[output wires]]
+    // 3. Create Nodes and Connections
+    // 4. Profit
+
+    let wires: Map = {
+        let engine = world.fetch::<RhaiEngine>();
+        let mut scope = world.fetch_mut::<RhaiScope>();
+        engine.0.eval_with_scope(&mut scope.0, "WIRES").unwrap()
+    };
+
+    let wires = wires
+        .iter()
+        .map(|(name, wire)| {
+            let wire = wire.clone_cast::<Map>();
+            let bends = wire
+                .get("bends")
+                .unwrap()
+                .clone_cast::<Array>()
+                .iter()
+                .map(|point| {
+                    let point = point.clone_cast::<Map>();
+                    let x = point.get("x").unwrap().clone();
+                    let y = point.get("y").unwrap().clone();
+                    Vec2::new(x.cast::<f32>(), y.cast::<f32>())
+                })
+                .collect();
+
+            (
+                name.to_string(),
+                Wire {
+                    points: bends,
+                    ..Wire::default()
+                },
+            )
+        })
+        .map(|(name, wire)| {
+            (
+                name.clone(),
+                world.create_entity().with(wire.clone()).build(),
+            )
+        })
+        .collect::<BTreeMap<String, Entity>>();
+}
+
 // pub struct CreateScriptedCircuitSys<N, const I: usize, const O: usize>
 // where
 //     N: Node<I, O> + 'static,
@@ -118,48 +170,35 @@ use crate::{
 //     }
 // }
 
-pub fn create_circuit(circuit: Array, world: &World) {
-    fn create_node(node: &Dynamic, world: &World) -> Entity {
-        let map = node.cast::<Map>();
+// pub fn create_circuit(circuit: Array, world: &World) {
+//     fn create_node(node: &Dynamic, world: &World) -> Entity {
+//         let map = node.cast::<Map>();
 
-        let inputs = {
-            let inputs = map.get("inputs").unwrap();
-            let input_arr = inputs.clone_cast::<Array>();
-            input_arr
-                .iter()
-                .map(|node| create_node(node, world))
-                .collect::<Vec<_>>();
-        };
-        let outputs = {
-            let outputs = map.get("outputs").unwrap();
-            let output_arr = outputs.clone_cast::<Array>();
-            output_arr
-                .iter()
-                .map(|node| create_node(node, world))
-                .collect::<Vec<_>>();
-        };
-        let pos = {
-            let pos = map.get("pos").unwrap();
-            let pos_arr = pos.clone_cast::<Array>();
-            Pos::from_vec(Vec2::new(
-                pos_arr[0].clone_cast::<f32>(),
-                pos_arr[1].clone_cast::<f32>(),
-            ))
-        };
+//         let outputs = {
+//             let outputs = map.get("outputs").unwrap();
+//             let output_arr = outputs.clone_cast::<Array>();
+//             output_arr
+//                 .iter()
+//                 .map(|node| create_node(node, world))
+//                 .collect::<Vec<_>>();
+//         };
+//         let pos = {
+//             let pos = map.get("pos").unwrap();
+//             let pos_arr = pos.clone_cast::<Array>();
+//             Pos::from_vec(Vec2::new(
+//                 pos_arr[0].clone_cast::<f32>(),
+//                 pos_arr[1].clone_cast::<f32>(),
+//             ))
+//         };
 
-        // We have a list of input nodes and output nodes
-        // create a list of input connections and output connections
-        // add wires for outputs
-        //
-        // actually maybe this should only go one way so the map just contains outputs and it adds
-        // inputs to the other nodes
-        todo!();
-    }
+//         // We have a list of output node entities
+//         todo!();
+//     }
 
-    circuit.iter().cloned().for_each(|node: Dynamic| {
-        create_node(&node, world);
-    });
-}
+//     circuit.iter().cloned().for_each(|node: Dynamic| {
+//         create_node(&node, world);
+//     });
+// }
 
 // pub fn run_circuit_create_sys(script: String, world: &World) {
 //     use crate::all_nodes;
