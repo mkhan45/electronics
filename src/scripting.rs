@@ -1,3 +1,4 @@
+use crate::nodes::NodeTy;
 use crate::{components::ConnectionTy, Pos};
 use macroquad::prelude::Vec2;
 use rhai::Map;
@@ -18,8 +19,8 @@ use crate::{
 // for humans to write but it's fine for auto serialization and deserialization
 
 pub fn create_circuit(world: &mut World) {
-    // 1. Create wires
-    // 2. Get RhaiNodes which contain a type, [[input wires]], [[output wires]]
+    // 1. Create wires - done
+    // 2. Get RhaiNodes which contain a type, [[input wires]], [[output wires]] - done
     // 3. Create Nodes and Connections
     // 4. Profit
 
@@ -61,6 +62,73 @@ pub fn create_circuit(world: &mut World) {
             )
         })
         .collect::<BTreeMap<String, Entity>>();
+
+    struct RhaiNode {
+        pub ty: NodeTy,
+        pub input_wires: Vec<Vec<String>>,
+        pub output_wires: Vec<Vec<String>>,
+        pub pos: Vec2,
+    }
+
+    let nodes: Array = {
+        let engine = world.fetch::<RhaiEngine>();
+        let mut scope = world.fetch_mut::<RhaiScope>();
+        engine.0.eval_with_scope(&mut scope.0, "NODES").unwrap()
+    };
+
+    let nodes = nodes.iter().map(|node: &Dynamic| {
+        let node = node.clone_cast::<Map>();
+
+        let ty = node.get("type").unwrap();
+        let ty = ty.clone_cast::<String>();
+
+        let ty = {
+            use crate::components::nodes::NodeTy::*;
+
+            match ty.as_str() {
+                "On" => OnNode,
+                "Off" => OffNode,
+                "Not" => NotNode,
+                "And" => AndNode,
+                "Or" => OrNode,
+                "Nand" => NandNode,
+                "Nor" => NorNode,
+                "Xor" => XorNode,
+                "Xnor" => XnorNode,
+                "Switch" => SwitchNode,
+                _ => panic!("Invalid Node"),
+            }
+        };
+
+        let process_array = |name: &str| {
+            let arr = node.get(name).unwrap();
+            let arr = arr.clone_cast::<Array>();
+            arr.iter()
+                .map(|connection| {
+                    let connection = connection.clone_cast::<Array>();
+                    connection
+                        .iter()
+                        .map(|input| input.clone_cast::<String>())
+                        .collect::<Vec<String>>()
+                })
+                .collect::<Vec<Vec<String>>>()
+        };
+
+        let input_wires = process_array("inputs");
+        let output_wires = process_array("inputs");
+
+        let pos = node.get("pos").unwrap().clone_cast::<Map>();
+        let x = pos.get("x").unwrap().clone_cast::<f32>();
+        let y = pos.get("y").unwrap().clone_cast::<f32>();
+        let pos = Vec2::new(x, y);
+
+        RhaiNode {
+            ty,
+            input_wires,
+            output_wires,
+            pos,
+        }
+    });
 }
 
 // pub struct CreateScriptedCircuitSys<N, const I: usize, const O: usize>
