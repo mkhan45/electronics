@@ -129,6 +129,19 @@ pub fn create_circuit(world: &mut World) {
             pos,
         }
     });
+
+    // have:
+    //      - nodes: Vec<RhaiNode>
+    //          - type, [[input wires]], [[output wires]], position
+    //          - wires are stored as name which is key to wire map
+    //      - wires: BTreeMap<String, Entity>
+    //          - Already instantiated in specs world
+    //
+    // pseudocode:
+    //      for each node:
+    //          1. Create the world in the specs world
+    //          2. Create a connection for each input/output on the node
+    //          3. Add the wires to the connection
 }
 
 // pub struct CreateScriptedCircuitSys<N, const I: usize, const O: usize>
