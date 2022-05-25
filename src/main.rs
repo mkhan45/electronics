@@ -209,7 +209,12 @@ async fn main() {
             let old_camera = world.fetch::<CameraRes>().0;
             let old_focus = old_camera.screen_to_world(mp);
 
+            #[cfg(target_arch = "wasm32")]
+            let mwheel = macroquad::input::mouse_wheel().1 * 0.01;
+
+            #[cfg(not(target_arch = "wasm32"))]
             let mwheel = macroquad::input::mouse_wheel().1;
+
             let zoom_fac = 1.0 + mwheel / 10.0;
             world.fetch_mut::<CameraRes>().0.zoom *= zoom_fac;
             let new_camera = world.fetch::<CameraRes>().0;
